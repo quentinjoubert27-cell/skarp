@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SKARP — Dis-nous qui tu es</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--lime:#C6FF34;--carbon:#171717;--c2:#262626;--white:#fff;--B:'Barlow Condensed',sans-serif;--S:'DM Sans',sans-serif}
+html,body{height:100%;overflow:hidden}
+body{background:var(--carbon);color:var(--white);font-family:var(--S);cursor:none;user-select:none;-webkit-user-select:none}
+body.touch{cursor:auto}
+button,input,textarea,select{font-family:var(--S)}
+button{cursor:none;background:none;border:none}
+body.touch button{cursor:pointer}
+
+/* ─── CURSOR ──────────────────────────── */
+#cd{position:fixed;width:8px;height:8px;background:var(--lime);border-radius:50%;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);transition:width .12s,height .12s}
+#cr{position:fixed;width:32px;height:32px;border:1.5px solid rgba(255,255,255,.5);border-radius:50%;pointer-events:none;z-index:9998;transform:translate(-50%,-50%);transition:border-color .2s,width .2s,height .2s}
+#cd.h{width:14px;height:14px}
+#cr.h{width:44px;height:44px;border-color:var(--lime)}
+
+/* ─── PROGRESS BAR ────────────────────── */
+.progress-bar{position:fixed;top:0;left:0;right:0;height:3px;background:rgba(255,255,255,.08);z-index:100}
+.progress-fill{height:100%;background:var(--lime);width:0%;transition:width .5s cubic-bezier(.4,0,.2,1)}
+
+/* ─── HEADER ──────────────────────────── */
+.header{
+  position:fixed;top:0;left:0;right:0;z-index:90;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:20px 40px;
+}
+.logo{font-family:var(--B);font-size:26px;font-weight:800;letter-spacing:.02em;position:absolute;left:50%;transform:translateX(-50%)}
+.logo b{color:var(--lime)}
+.btn-back{
+  display:flex;align-items:center;gap:8px;
+  font-size:13px;color:rgba(255,255,255,.3);
+  transition:color .2s;padding:8px 0;
+  cursor:none;
+}
+body.touch .btn-back{cursor:pointer}
+.btn-back:hover{color:var(--lime)}
+.btn-back svg{width:16px;height:16px;stroke:currentColor;transition:transform .2s}
+.btn-back:hover svg{transform:translateX(-3px)}
+.btn-skip{font-size:13px;color:rgba(255,255,255,.25);text-decoration:underline;text-underline-offset:3px;transition:color .2s;cursor:none;padding:8px 0}
+body.touch .btn-skip{cursor:pointer}
+.btn-skip:hover{color:var(--lime)}
+
+/* ─── STEP WRAP ───────────────────────── */
+.step-outer{
+  position:fixed;inset:0;
+  display:flex;align-items:center;justify-content:center;
+  padding:100px 40px 100px;
+  overflow-y:auto;
+}
+.step-outer::-webkit-scrollbar{width:0}
+#stepContent{
+  width:100%;max-width:860px;
+  display:flex;flex-direction:column;align-items:center;
+  gap:48px;
+}
+
+/* ─── STEP TYPOGRAPHY ─────────────────── */
+.step-q{
+  font-family:var(--B);font-size:clamp(38px,6vw,76px);font-weight:800;
+  text-transform:uppercase;line-height:.95;letter-spacing:-.01em;
+  text-align:center;
+}
+.step-q b{color:var(--lime)}
+.step-hint{font-size:14px;color:rgba(255,255,255,.3);text-align:center;margin-top:-28px}
+
+/* ─── SPORT GRID ──────────────────────── */
+.sport-grid{
+  display:grid;grid-template-columns:repeat(4,1fr);gap:14px;width:100%;
+}
+.sport-card{
+  background:var(--c2);border:1.5px solid rgba(255,255,255,.07);
+  padding:22px 14px;
+  display:flex;flex-direction:column;align-items:center;gap:12px;
+  cursor:none;transition:border-color .2s,background .2s,transform .12s;
+}
+body.touch .sport-card{cursor:pointer}
+.sport-card:hover{border-color:rgba(198,255,52,.4)}
+.sport-card.sel{border-color:var(--lime);background:rgba(198,255,52,.06)}
+.sport-card.sel .sport-icon{color:var(--lime)}
+.sport-icon{width:40px;height:40px;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.35);transition:color .2s}
+.sport-icon svg{width:36px;height:36px;stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.sport-name{font-family:var(--B);font-size:16px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;text-align:center}
+
+/* ─── DISCIPLINE INPUT ────────────────── */
+.discipline-wrap{width:100%;position:relative}
+.discipline-input{
+  width:100%;background:transparent;border:none;border-bottom:2px solid rgba(255,255,255,.15);
+  color:var(--white);font-family:var(--B);font-size:clamp(28px,4vw,52px);font-weight:800;
+  text-transform:uppercase;letter-spacing:.02em;padding:8px 0 14px;outline:none;
+  transition:border-color .25s;
+}
+.discipline-input::placeholder{color:rgba(255,255,255,.15)}
+.discipline-input:focus{border-color:var(--lime)}
+.suggestions{
+  position:absolute;top:100%;left:0;right:0;background:var(--c2);
+  border:1px solid rgba(255,255,255,.08);
+  max-height:220px;overflow-y:auto;display:none;z-index:10;
+}
+.suggestions.show{display:block}
+.sugg-item{
+  padding:12px 18px;font-size:14px;color:rgba(255,255,255,.6);
+  cursor:none;border-bottom:1px solid rgba(255,255,255,.04);transition:background .15s,color .15s;
+}
+body.touch .sugg-item{cursor:pointer}
+.sugg-item:hover{background:rgba(198,255,52,.07);color:var(--white)}
+.btn-skip-step{
+  font-size:13px;color:rgba(255,255,255,.3);text-decoration:underline;text-underline-offset:3px;
+  cursor:none;margin-top:16px;display:inline-block;transition:color .2s;background:none;border:none;
+}
+body.touch .btn-skip-step{cursor:pointer}
+.btn-skip-step:hover{color:var(--lime)}
+
+/* ─── OPTION CARDS (objectif, délai, mode) ─── */
+.opts-grid{display:grid;gap:12px;width:100%}
+.opts-grid.col2{grid-template-columns:1fr 1fr}
+.opts-grid.col3{grid-template-columns:repeat(3,1fr)}
+.opt-card{
+  background:var(--c2);border:1.5px solid rgba(255,255,255,.07);
+  padding:22px 24px;
+  cursor:none;transition:border-color .2s,background .2s;
+  display:flex;flex-direction:column;gap:8px;
+}
+body.touch .opt-card{cursor:pointer}
+.opt-card:hover{border-color:rgba(198,255,52,.35)}
+.opt-card.sel{border-color:var(--lime);background:rgba(198,255,52,.06)}
+.opt-card.sel .opt-title{color:var(--lime)}
+.opt-card.horizontal{flex-direction:row;align-items:center;gap:20px;padding:20px 24px}
+.opt-icon{width:40px;height:40px;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.3);transition:color .2s;flex-shrink:0}
+.opt-icon svg{width:28px;height:28px;stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.opt-card.sel .opt-icon{color:var(--lime)}
+.opt-title{font-family:var(--B);font-size:20px;font-weight:800;text-transform:uppercase;transition:color .2s}
+.opt-sub{font-size:13px;color:rgba(255,255,255,.35);line-height:1.5}
+
+/* ─── DELAY BUTTONS ───────────────────── */
+.delay-opts{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;width:100%}
+.delay-btn{
+  background:var(--c2);border:1.5px solid rgba(255,255,255,.1);
+  color:rgba(255,255,255,.7);font-family:var(--B);font-size:18px;font-weight:800;
+  text-transform:uppercase;letter-spacing:.04em;padding:16px 32px;
+  cursor:none;transition:all .2s;
+}
+body.touch .delay-btn{cursor:pointer}
+.delay-btn:hover{border-color:rgba(198,255,52,.4);color:var(--white)}
+.delay-btn.sel{border-color:var(--lime);background:rgba(198,255,52,.08);color:var(--lime)}
+
+/* ─── LEVEL SLIDER ────────────────────── */
+.level-wrap{width:100%;display:flex;flex-direction:column;align-items:center;gap:32px}
+.level-display{
+  font-family:var(--B);font-size:clamp(52px,8vw,100px);font-weight:800;
+  text-transform:uppercase;color:var(--lime);line-height:1;letter-spacing:-.02em;
+  min-height:1.1em;text-align:center;
+}
+.level-track{display:flex;gap:10px;width:100%;max-width:600px}
+.level-pip{
+  flex:1;display:flex;flex-direction:column;align-items:center;gap:10px;
+  cursor:none;
+}
+body.touch .level-pip{cursor:pointer}
+.level-dot{
+  width:100%;height:6px;background:rgba(255,255,255,.1);transition:background .25s;
+}
+.level-pip:hover .level-dot{background:rgba(198,255,52,.3)}
+.level-pip.sel .level-dot{background:var(--lime)}
+.level-label{font-size:11px;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:.06em;text-align:center;font-weight:500;transition:color .2s;white-space:nowrap}
+.level-pip.sel .level-label{color:var(--lime)}
+
+/* ─── FREQ COUNTER ────────────────────── */
+.freq-wrap{display:flex;align-items:center;gap:40px}
+.freq-btn{
+  width:64px;height:64px;border:1.5px solid rgba(255,255,255,.15);
+  display:flex;align-items:center;justify-content:center;
+  font-size:28px;color:rgba(255,255,255,.5);
+  cursor:none;transition:border-color .2s,color .2s,transform .12s;
+}
+body.touch .freq-btn{cursor:pointer}
+.freq-btn:hover{border-color:var(--lime);color:var(--lime)}
+.freq-btn:active{transform:scale(.92)}
+.freq-num{
+  font-family:var(--B);font-size:clamp(80px,14vw,160px);font-weight:800;
+  color:var(--lime);line-height:1;min-width:3ch;text-align:center;
+}
+.freq-unit{font-size:14px;color:rgba(255,255,255,.25);text-align:center;margin-top:8px;letter-spacing:.08em;text-transform:uppercase}
+
+/* ─── INJURY TOGGLE ───────────────────── */
+.injury-wrap{display:flex;flex-direction:column;align-items:center;gap:32px;width:100%}
+.toggle-btns{display:flex;gap:16px}
+.toggle-btn{
+  font-family:var(--B);font-size:20px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;
+  border:1.5px solid rgba(255,255,255,.15);color:rgba(255,255,255,.4);
+  padding:16px 56px;cursor:none;transition:all .2s;
+}
+body.touch .toggle-btn{cursor:pointer}
+.toggle-btn:hover{border-color:rgba(198,255,52,.4);color:var(--white)}
+.toggle-btn.sel{border-color:var(--lime);background:rgba(198,255,52,.08);color:var(--lime)}
+.injury-detail{
+  width:100%;max-width:600px;
+  overflow:hidden;max-height:0;opacity:0;transition:max-height .4s,opacity .35s;
+}
+.injury-detail.show{max-height:200px;opacity:1}
+.injury-ta{
+  width:100%;background:var(--c2);border:1.5px solid rgba(255,255,255,.1);
+  color:var(--white);padding:18px 20px;font-size:14px;line-height:1.7;
+  resize:none;outline:none;height:120px;transition:border-color .2s;
+}
+.injury-ta::placeholder{color:rgba(255,255,255,.2)}
+.injury-ta:focus{border-color:var(--lime)}
+
+/* ─── LOCALISATION ────────────────────── */
+.loc-wrap{display:flex;flex-direction:column;gap:16px;width:100%;max-width:600px}
+.loc-input{
+  width:100%;background:transparent;border:none;border-bottom:2px solid rgba(255,255,255,.15);
+  color:var(--white);font-family:var(--B);font-size:clamp(24px,4vw,44px);font-weight:800;
+  text-transform:uppercase;letter-spacing:.02em;padding:8px 0 14px;outline:none;transition:border-color .25s;
+}
+.loc-input::placeholder{color:rgba(255,255,255,.15)}
+.loc-input:focus{border-color:var(--lime)}
+.loc-row{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.loc-label{font-size:13px;color:rgba(255,255,255,.3);letter-spacing:.06em;text-transform:uppercase;white-space:nowrap}
+.loc-select{
+  background:var(--c2);border:1.5px solid rgba(255,255,255,.1);
+  color:var(--white);padding:10px 36px 10px 16px;font-size:14px;outline:none;
+  -webkit-appearance:none;appearance:none;cursor:none;transition:border-color .2s;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%23ffffff' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 12px center;background-size:11px;
+}
+body.touch .loc-select{cursor:pointer}
+.loc-select:focus{border-color:var(--lime)}
+
+/* ─── BUDGET SLIDER ───────────────────── */
+.budget-wrap{display:flex;flex-direction:column;align-items:center;gap:32px;width:100%;max-width:600px}
+.budget-display{
+  font-family:var(--B);font-size:clamp(64px,10vw,120px);font-weight:800;
+  color:var(--lime);line-height:1;letter-spacing:-.02em;text-align:center;
+}
+.budget-range{width:100%;position:relative;padding:8px 0}
+.budget-input{
+  width:100%;-webkit-appearance:none;appearance:none;
+  height:4px;background:rgba(255,255,255,.1);outline:none;
+}
+.budget-input::-webkit-slider-thumb{
+  -webkit-appearance:none;width:24px;height:24px;border-radius:50%;
+  background:var(--lime);border:3px solid var(--carbon);cursor:none;
+  box-shadow:0 0 0 4px rgba(198,255,52,.2);
+}
+body.touch .budget-input::-webkit-slider-thumb{cursor:grab}
+.budget-input::-moz-range-thumb{width:24px;height:24px;border-radius:50%;background:var(--lime);border:3px solid var(--carbon);cursor:none}
+.budget-labels{display:flex;justify-content:space-between;width:100%;font-size:12px;color:rgba(255,255,255,.2);letter-spacing:.06em;text-transform:uppercase}
+
+/* ─── CTA BOTTOM ──────────────────────── */
+.bottom-cta{
+  position:fixed;bottom:0;left:0;right:0;
+  padding:24px 40px;
+  background:linear-gradient(to top,var(--carbon) 60%,transparent);
+  display:flex;justify-content:center;z-index:80;
+}
+.mz{position:relative;display:inline-block}
+.btn-continue{
+  font-family:var(--B);font-size:20px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;
+  background:rgba(198,255,52,.15);color:rgba(198,255,52,.35);
+  border:1.5px solid rgba(198,255,52,.2);
+  padding:16px 72px;cursor:none;
+  transition:background .3s,color .3s,border-color .3s;
+  pointer-events:none;
+}
+body.touch .btn-continue{cursor:pointer}
+.btn-continue.active{
+  background:var(--lime);color:var(--carbon);
+  border-color:var(--lime);
+  pointer-events:all;cursor:none;
+}
+body.touch .btn-continue.active{cursor:pointer}
+.btn-continue.final{padding:16px 88px}
+
+/* ─── LOADING SCREEN ──────────────────── */
+.loading-screen{
+  position:fixed;inset:0;background:var(--carbon);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:40px;
+  opacity:0;pointer-events:none;transition:opacity .5s;z-index:300;
+}
+.loading-screen.show{opacity:1;pointer-events:all}
+.loading-svg{width:120px;height:120px}
+.loading-text{
+  font-family:var(--B);font-size:clamp(20px,3vw,32px);font-weight:800;
+  text-transform:uppercase;letter-spacing:.04em;text-align:center;
+  color:rgba(255,255,255,.6);min-height:1.4em;
+  transition:opacity .3s;
+}
+.loading-text b{color:var(--lime)}
+.redirect-msg{
+  font-size:14px;color:rgba(255,255,255,.2);letter-spacing:.08em;text-transform:uppercase;
+  opacity:0;transition:opacity .5s;
+}
+.redirect-msg.show{opacity:1}
+
+/* ─── RESPONSIVE ──────────────────────── */
+@media(max-width:700px){
+  .header{padding:14px 20px}
+  .step-outer{padding:80px 20px 90px}
+  .sport-grid{grid-template-columns:repeat(2,1fr)}
+  .opts-grid.col3,.opts-grid.col2{grid-template-columns:1fr}
+  .delay-opts{flex-direction:column}
+  .delay-btn{text-align:center}
+  .bottom-cta{padding:16px 20px}
+  .btn-continue{padding:16px 40px;font-size:17px;width:100%}
+  .freq-btn{width:52px;height:52px}
+  .toggle-btn{padding:14px 36px}
+}
+</style>
+</head>
+<body>
+
+<div id="cd"></div>
+<div id="cr"></div>
+
+<!-- PROGRESS -->
+<div class="progress-bar" aria-hidden="true"><div class="progress-fill" id="progressFill"></div></div>
+
+<!-- LOADING SCREEN -->
+<div class="loading-screen" id="loadingScreen" aria-live="polite">
+  <svg class="loading-svg" viewBox="0 0 120 120" aria-hidden="true">
+    <circle cx="60" cy="60" r="52" fill="none" stroke="rgba(255,255,255,.06)" stroke-width="6"/>
+    <circle id="loadingRing" cx="60" cy="60" r="52" fill="none" stroke="#C6FF34" stroke-width="6"
+      stroke-dasharray="0 327" stroke-linecap="round" stroke-dashoffset="81.75"
+      transform="rotate(-90 60 60)"/>
+  </svg>
+  <div class="loading-text" id="loadingText">Analyse de ton profil…</div>
+  <div class="redirect-msg" id="redirectMsg">Redirection vers tes résultats…</div>
+</div>
+
+<!-- HEADER -->
+<header class="header">
+  <button class="btn-back" id="btnBack" aria-label="Étape précédente" style="visibility:hidden">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+    Retour
+  </button>
+  <a href="/landing.html" class="logo" aria-label="SKARP accueil">SKARP<b>.</b></a>
+  <a href="/recherche.html" class="btn-skip" id="btnSkip">Passer pour l'instant</a>
+</header>
+
+<!-- STEP CONTENT -->
+<div class="step-outer" aria-live="polite" aria-atomic="true">
+  <div id="stepContent"></div>
+</div>
+
+<!-- CTA BOTTOM -->
+<div class="bottom-cta">
+  <div class="mz">
+    <button class="btn-continue mag-btn" id="btnContinue" disabled aria-label="Continuer">Continuer</button>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<script>
+/* ═══════════════════════════════════════════════════
+   STATE
+═══════════════════════════════════════════════════ */
+const profile = {};
+let currentIdx = 0;       // 0-based step index (0-9)
+const navHistory = [0];   // back navigation stack
+
+// Sport suggestions for step 2
+const SUGG = {
+  'Rugby':['Pilier','Talonneur','Deuxième ligne','Troisième ligne','Demi de mêlée','Ouvreur','Centre','Ailier','Arrière'],
+  'Football':['Gardien','Défenseur central','Latéral droit','Latéral gauche','Milieu défensif','Milieu relayeur','Ailier droit','Ailier gauche','Attaquant'],
+  'Musculation':['Powerlifting','Bodybuilding','Fitness général','Force athlétique','Haltérophilie'],
+  'Running':['Sprint (100/200m)','Demi-fond (400/800m)','Fond (1500/5000m)','Marathon','Trail / Ultra-trail'],
+  'Natation':['Crawl','Dos crawlé','Brasse','Papillon','4 nages','Eau libre'],
+  'Bodybuilding':['Bikini','Classic physique','Men\'s physique','Women\'s physique','Physique naturel'],
+  'Cyclisme':['Route','VTT XC','VTT DH','Piste','BMX','Gravel'],
+  'Autre':[],
+};
+
+/* ═══════════════════════════════════════════════════
+   STEP RENDERERS
+═══════════════════════════════════════════════════ */
+const SPORTS = [
+  {name:'Rugby',   svg:'<path d="M12 2a4 4 0 0 1 4 4c0 4-4 10-4 10S8 10 8 6a4 4 0 0 1 4-4z"/><ellipse cx="12" cy="6" rx="4" ry="4"/>'},
+  {name:'Football',svg:'<circle cx="12" cy="12" r="10"/><path d="M12 2v4M12 18v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M2 12h4M18 12h4"/>'},
+  {name:'Musculation',svg:'<line x1="6" y1="12" x2="18" y2="12"/><line x1="2" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="22" y2="12"/><rect x="4" y="9" width="2" height="6" rx="1"/><rect x="18" y="9" width="2" height="6" rx="1"/><rect x="9" y="10" width="6" height="4" rx="1"/>'},
+  {name:'Running',  svg:'<circle cx="12" cy="4" r="2"/><path d="M15 7l-2 3-3 1-2 5M9 10l3-1 3 3 2-2"/>'},
+  {name:'Natation', svg:'<path d="M2 12c2-2 4-2 6 0s4 2 6 0 4-2 6 0"/><path d="M2 17c2-2 4-2 6 0s4 2 6 0 4-2 6 0"/>'},
+  {name:'Bodybuilding',svg:'<path d="M6 4c0 0 0 4 4 6s4 4 2 8M18 4c0 0 0 4-4 6s-4 4-2 8"/>'},
+  {name:'Cyclisme', svg:'<circle cx="6" cy="14" r="4"/><circle cx="18" cy="14" r="4"/><path d="M6 14l4-8h4l2 5M10 6h5l3 3"/>'},
+  {name:'Autre',    svg:'<circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/>'},
+];
+
+const OBJECTIFS = [
+  {name:'Prépa intersaison',sub:'Arriver en forme à la reprise'},
+  {name:'Prise de masse',sub:'Gagner en muscle et en force'},
+  {name:'Perte de poids',sub:'Perdre du gras, garder le muscle'},
+  {name:'Remise en forme',sub:'Reprendre une activité régulière'},
+  {name:'Performance',sub:'Améliorer mes stats en compétition'},
+  {name:'Récupération blessure',sub:'Programme adapté post-blessure'},
+];
+
+const DELAIS = ['Dans le mois','1 à 3 mois','3 à 6 mois','Pas de deadline'];
+const LEVELS = ['Débutant','Amateur','Confirmé','Compétition','Semi-pro'];
+
+function svgWrap(path) {
+  return `<svg viewBox="0 0 24 24">${path}</svg>`;
+}
+
+function renderStep(n) {
+  switch(n){
+
+    case 0: return `
+      <h2 class="step-q">QUEL SPORT<br><b>PRATIQUES-TU&nbsp;?</b></h2>
+      <p class="step-hint">Sélectionne ton sport principal</p>
+      <div class="sport-grid">
+        ${SPORTS.map(s=>`
+          <div class="sport-card${profile.sport===s.name?' sel':''}" data-sport="${s.name}" role="button" tabindex="0" aria-pressed="${profile.sport===s.name}">
+            <div class="sport-icon">${svgWrap(s.svg)}</div>
+            <span class="sport-name">${s.name}</span>
+          </div>`).join('')}
+      </div>`;
+
+    case 1: {
+      const list = SUGG[profile.sport]||[];
+      return `
+      <h2 class="step-q">TON POSTE OU<br><b>TA DISCIPLINE&nbsp;?</b></h2>
+      <div class="discipline-wrap">
+        <input class="discipline-input" id="discInput" type="text"
+          placeholder="${list[0]||'Ex: Ailier...'}"
+          value="${profile.discipline||''}" autocomplete="off" spellcheck="false">
+        <div class="suggestions" id="discSugg">
+          ${list.map(s=>`<div class="sugg-item" data-val="${s}">${s}</div>`).join('')}
+        </div>
+        <button class="btn-skip-step" id="discSkip">Je ne sais pas / pas applicable</button>
+      </div>`;
+    }
+
+    case 2: return `
+      <h2 class="step-q">TON OBJECTIF<br><b>PRINCIPAL&nbsp;?</b></h2>
+      <div class="opts-grid col2">
+        ${OBJECTIFS.map(o=>`
+          <div class="opt-card${profile.objectif===o.name?' sel':''}" data-val="${o.name}" role="button" tabindex="0" aria-pressed="${profile.objectif===o.name}">
+            <div class="opt-title">${o.name}</div>
+            <div class="opt-sub">${o.sub}</div>
+          </div>`).join('')}
+      </div>`;
+
+    case 3: return `
+      <h2 class="step-q">TU VEUX ATTEINDRE<br><b>CET OBJECTIF QUAND&nbsp;?</b></h2>
+      <div class="delay-opts">
+        ${DELAIS.map(d=>`
+          <button class="delay-btn${profile.delai===d?' sel':''}" data-val="${d}">${d}</button>`).join('')}
+      </div>`;
+
+    case 4: {
+      const sel = profile.niveau||null;
+      const idx = LEVELS.indexOf(sel);
+      return `
+      <h2 class="step-q">TON NIVEAU<br><b>DE PRATIQUE&nbsp;?</b></h2>
+      <div class="level-wrap">
+        <div class="level-display" id="levelDisplay">${sel||'─'}</div>
+        <div class="level-track">
+          ${LEVELS.map((l,i)=>`
+            <div class="level-pip${sel===l?' sel':''}" data-lvl="${l}" data-i="${i}" role="button" tabindex="0" aria-pressed="${sel===l}">
+              <div class="level-dot"></div>
+              <span class="level-label">${l}</span>
+            </div>`).join('')}
+        </div>
+      </div>`;
+    }
+
+    case 5: return `
+      <h2 class="step-q">COMBIEN DE SÉANCES<br><b>PAR SEMAINE&nbsp;?</b></h2>
+      <div class="freq-wrap">
+        <button class="freq-btn" id="freqMinus" aria-label="Diminuer">−</button>
+        <div>
+          <div class="freq-num" id="freqNum">${profile.seances||3}</div>
+          <div class="freq-unit">séances / semaine</div>
+        </div>
+        <button class="freq-btn" id="freqPlus" aria-label="Augmenter">+</button>
+      </div>`;
+
+    case 6: return `
+      <h2 class="step-q">DES BLESSURES<br><b>OU CONTRAINTES&nbsp;?</b></h2>
+      <div class="injury-wrap">
+        <div class="toggle-btns">
+          <button class="toggle-btn${profile.injury==='non'?' sel':''}" data-inj="non">Non</button>
+          <button class="toggle-btn${profile.injury==='oui'?' sel':''}" data-inj="oui">Oui</button>
+        </div>
+        <div class="injury-detail${profile.injury==='oui'?' show':''}" id="injDetail">
+          <textarea class="injury-ta" id="injText" placeholder="Précise ici tes blessures ou contraintes…">${profile.injuryText||''}</textarea>
+        </div>
+      </div>`;
+
+    case 7: return `
+      <h2 class="step-q">COMMENT VEUX-TU<br><b>ÊTRE COACHÉ&nbsp;?</b></h2>
+      <div class="opts-grid">
+        ${[
+          {val:'Distanciel',sub:'Programme + suivi en ligne, où que tu sois',icon:'<rect x="2" y="4" width="20" height="14" rx="2"/><line x1="8" y1="22" x2="16" y2="22"/><line x1="12" y1="18" x2="12" y2="22"/>'},
+          {val:'Présentiel', sub:'Séances en face-à-face avec ton coach',icon:'<path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>'},
+          {val:'Les deux',   sub:'Flexibilité totale selon tes disponibilités',icon:'<circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>'},
+        ].map(m=>`
+          <div class="opt-card horizontal${profile.mode===m.val?' sel':''}" data-val="${m.val}" role="button" tabindex="0" aria-pressed="${profile.mode===m.val}">
+            <div class="opt-icon">${svgWrap(m.icon)}</div>
+            <div><div class="opt-title">${m.val}</div><div class="opt-sub">${m.sub}</div></div>
+          </div>`).join('')}
+      </div>`;
+
+    case 8: return `
+      <h2 class="step-q">OÙ ES-TU<br><b>BASÉ&nbsp;?</b></h2>
+      <div class="loc-wrap">
+        <input class="loc-input" id="locInput" type="text"
+          placeholder="Ville ou code postal"
+          value="${profile.ville||''}" autocomplete="off">
+        <div class="loc-row">
+          <span class="loc-label">Rayon de déplacement</span>
+          <select class="loc-select" id="locRadius">
+            ${['5 km','10 km','25 km','50 km'].map(r=>`<option${profile.rayon===r?' selected':''}>${r}</option>`).join('')}
+          </select>
+        </div>
+      </div>`;
+
+    case 9: {
+      const v = profile.budget!=null ? profile.budget : 100;
+      const disp = v>=300 ? '300€+' : v+'€';
+      return `
+      <h2 class="step-q">QUEL BUDGET<br><b>MENSUEL&nbsp;?</b></h2>
+      <div class="budget-wrap">
+        <div class="budget-display" id="budgetDisplay">${disp}</div>
+        <div class="budget-range">
+          <input class="budget-input" id="budgetSlider" type="range" min="0" max="300" step="10" value="${v}" aria-label="Budget mensuel">
+        </div>
+        <div class="budget-labels"><span>0€</span><span>100€</span><span>200€</span><span>300€+</span></div>
+      </div>`;
+    }
+
+    default: return '';
+  }
+}
+
+/* ═══════════════════════════════════════════════════
+   NAVIGATION
+═══════════════════════════════════════════════════ */
+const TOTAL = 10; // display total
+
+function displayNum(idx) {
+  // Step 8 is skipped if distanciel, but we show "9" for budget
+  if(profile.mode === 'Distanciel' && idx >= 8) return idx; // 8 becomes 9 effectively
+  return idx + 1;
+}
+
+function getNextIdx(from) {
+  if(from === 7 && profile.mode === 'Distanciel') return 9;
+  if(from >= 9) return null; // done
+  return from + 1;
+}
+
+function updateProgress(idx) {
+  const total = profile.mode === 'Distanciel' ? 9 : 10;
+  const step  = profile.mode === 'Distanciel' && idx >= 8 ? idx : idx + 1;
+  document.getElementById('progressFill').style.width = (step/total*100)+'%';
+  document.getElementById('btnBack').style.visibility = navHistory.length > 1 ? 'visible' : 'hidden';
+}
+
+function setContinue(enabled, label) {
+  const btn = document.getElementById('btnContinue');
+  btn.classList.toggle('active', enabled);
+  btn.disabled = !enabled;
+  if(label) btn.textContent = label;
+}
+
+function goTo(idx, dir='fwd') {
+  currentIdx = idx;
+  const content = document.getElementById('stepContent');
+  const outX = dir==='fwd' ? -60 : 60;
+  const inX  = dir==='fwd' ?  60 : -60;
+
+  gsap.to(content,{x:outX,opacity:0,duration:.25,ease:'power2.in',onComplete:()=>{
+    content.innerHTML = renderStep(idx);
+    gsap.fromTo(content,{x:inX,opacity:0},{x:0,opacity:1,duration:.4,ease:'power3.out'});
+    bindStep(idx);
+    updateProgress(idx);
+    updateContinueBtn(idx);
+  }});
+}
+
+function updateContinueBtn(idx) {
+  const isFinal = idx === 9;
+  const label = isFinal ? 'Voir mes coachs' : 'Continuer';
+  if(isFinal) document.getElementById('btnContinue').classList.add('final');
+  else document.getElementById('btnContinue').classList.remove('final');
+
+  // Determine if already answered
+  const answered = isAnswered(idx);
+  setContinue(answered, label);
+}
+
+function isAnswered(idx) {
+  switch(idx){
+    case 0: return !!profile.sport;
+    case 1: return !!profile.discipline; // can be '' if skipped
+    case 2: return !!profile.objectif;
+    case 3: return !!profile.delai;
+    case 4: return !!profile.niveau;
+    case 5: return profile.seances != null;
+    case 6: return !!profile.injury;
+    case 7: return !!profile.mode;
+    case 8: return !!profile.ville;
+    case 9: return profile.budget != null;
+    default: return false;
+  }
+}
+
+/* ═══════════════════════════════════════════════════
+   STEP BINDINGS
+═══════════════════════════════════════════════════ */
+function bindStep(idx) {
+  switch(idx){
+
+    case 0:
+      document.querySelectorAll('.sport-card').forEach(card=>{
+        card.addEventListener('click',()=>{
+          document.querySelectorAll('.sport-card').forEach(c=>{c.classList.remove('sel');c.setAttribute('aria-pressed','false')});
+          card.classList.add('sel');
+          card.setAttribute('aria-pressed','true');
+          profile.sport = card.dataset.sport;
+          gsap.fromTo(card,{scale:.94},{scale:1,duration:.25,ease:'back.out(2)'});
+          profile.discipline = ''; // reset discipline when sport changes
+          setContinue(true, 'Continuer');
+        });
+        card.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' ')card.click()});
+      });
+      break;
+
+    case 1: {
+      const input = document.getElementById('discInput');
+      const sugg  = document.getElementById('discSugg');
+      const list  = SUGG[profile.sport]||[];
+
+      input.focus();
+      if(profile.discipline) setContinue(true,'Continuer');
+
+      function filterSugg(val) {
+        const q = val.toLowerCase();
+        const matches = q ? list.filter(s=>s.toLowerCase().includes(q)) : list;
+        sugg.innerHTML = matches.map(s=>`<div class="sugg-item" data-val="${s}">${s}</div>`).join('');
+        sugg.classList.toggle('show', matches.length>0 && (document.activeElement===input));
+        bindSuggItems();
+      }
+
+      function bindSuggItems(){
+        sugg.querySelectorAll('.sugg-item').forEach(el=>{
+          el.addEventListener('mousedown',e=>{
+            e.preventDefault();
+            input.value = el.dataset.val;
+            profile.discipline = el.dataset.val;
+            sugg.classList.remove('show');
+            setContinue(true,'Continuer');
+          });
+        });
+      }
+
+      input.addEventListener('input',()=>{ filterSugg(input.value); setContinue(!!input.value,'Continuer'); profile.discipline=input.value; });
+      input.addEventListener('focus',()=>filterSugg(input.value));
+      input.addEventListener('blur',()=>setTimeout(()=>sugg.classList.remove('show'),200));
+      filterSugg('');
+
+      document.getElementById('discSkip').addEventListener('click',()=>{
+        profile.discipline = '';
+        input.value = '';
+        sugg.classList.remove('show');
+        setContinue(true,'Continuer');
+      });
+      break;
+    }
+
+    case 2:
+      document.querySelectorAll('[data-val]').forEach(card=>{
+        card.addEventListener('click',()=>{
+          document.querySelectorAll('.opt-card').forEach(c=>{c.classList.remove('sel');c.setAttribute('aria-pressed','false')});
+          card.classList.add('sel');
+          card.setAttribute('aria-pressed','true');
+          profile.objectif = card.dataset.val;
+          gsap.fromTo(card,{scale:.97},{scale:1,duration:.2,ease:'back.out(2)'});
+          setContinue(true,'Continuer');
+        });
+        card.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' ')card.click()});
+      });
+      break;
+
+    case 3:
+      document.querySelectorAll('.delay-btn').forEach(btn=>{
+        btn.addEventListener('click',()=>{
+          document.querySelectorAll('.delay-btn').forEach(b=>b.classList.remove('sel'));
+          btn.classList.add('sel');
+          profile.delai = btn.dataset.val;
+          gsap.fromTo(btn,{scale:.95},{scale:1,duration:.2,ease:'back.out(2)'});
+          setContinue(true,'Continuer');
+        });
+      });
+      break;
+
+    case 4:
+      if(profile.niveau==null) setContinue(false,'Continuer');
+      document.querySelectorAll('.level-pip').forEach(pip=>{
+        pip.addEventListener('click',()=>{
+          document.querySelectorAll('.level-pip').forEach(p=>{p.classList.remove('sel');p.setAttribute('aria-pressed','false')});
+          pip.classList.add('sel');
+          pip.setAttribute('aria-pressed','true');
+          profile.niveau = pip.dataset.lvl;
+          document.getElementById('levelDisplay').textContent = pip.dataset.lvl;
+          setContinue(true,'Continuer');
+        });
+        pip.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' ')pip.click()});
+      });
+      break;
+
+    case 5:
+      if(profile.seances==null) profile.seances=3;
+      setContinue(true,'Continuer');
+      function updateFreq(){
+        document.getElementById('freqNum').textContent = profile.seances;
+      }
+      document.getElementById('freqMinus').addEventListener('click',()=>{
+        if(profile.seances>1){ profile.seances--; gsap.fromTo('#freqNum',{scale:.85},{scale:1,duration:.2,ease:'back.out(2)'}); updateFreq(); }
+      });
+      document.getElementById('freqPlus').addEventListener('click',()=>{
+        if(profile.seances<7){ profile.seances++; gsap.fromTo('#freqNum',{scale:.85},{scale:1,duration:.2,ease:'back.out(2)'}); updateFreq(); }
+      });
+      break;
+
+    case 6: {
+      function toggleInjury(val){
+        document.querySelectorAll('.toggle-btn').forEach(b=>b.classList.toggle('sel',b.dataset.inj===val));
+        profile.injury = val;
+        const detail = document.getElementById('injDetail');
+        detail.classList.toggle('show', val==='oui');
+        setContinue(true,'Continuer');
+      }
+      document.querySelectorAll('.toggle-btn').forEach(btn=>{
+        btn.addEventListener('click',()=>toggleInjury(btn.dataset.inj));
+      });
+      const ta = document.getElementById('injText');
+      if(ta) ta.addEventListener('input',()=>{ profile.injuryText=ta.value; });
+      break;
+    }
+
+    case 7:
+      document.querySelectorAll('.opt-card[data-val]').forEach(card=>{
+        card.addEventListener('click',()=>{
+          document.querySelectorAll('.opt-card').forEach(c=>{c.classList.remove('sel');c.setAttribute('aria-pressed','false')});
+          card.classList.add('sel');
+          card.setAttribute('aria-pressed','true');
+          profile.mode = card.dataset.val;
+          gsap.fromTo(card,{scale:.97},{scale:1,duration:.2,ease:'back.out(2)'});
+          setContinue(true,'Continuer');
+        });
+        card.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' ')card.click()});
+      });
+      break;
+
+    case 8: {
+      const input = document.getElementById('locInput');
+      input.focus();
+      if(profile.ville) setContinue(true,'Continuer');
+      input.addEventListener('input',()=>{
+        profile.ville = input.value;
+        setContinue(!!input.value,'Continuer');
+      });
+      document.getElementById('locRadius').addEventListener('change',e=>{ profile.rayon=e.target.value; });
+      break;
+    }
+
+    case 9: {
+      if(profile.budget==null) profile.budget=100;
+      setContinue(true,'Voir mes coachs');
+      const slider = document.getElementById('budgetSlider');
+      function updateBudget(){
+        const v = parseInt(slider.value);
+        profile.budget = v;
+        document.getElementById('budgetDisplay').textContent = v>=300?'300€+':v+'€';
+        // track fill
+        const pct = v/300*100;
+        slider.style.background = `linear-gradient(to right,var(--lime) ${pct}%,rgba(255,255,255,.1) ${pct}%)`;
+      }
+      slider.addEventListener('input', updateBudget);
+      updateBudget();
+      break;
+    }
+  }
+
+  // cursor re-bind after re-render
+  if(!isTouch) bindCursorHover();
+}
+
+/* ═══════════════════════════════════════════════════
+   NEXT / BACK
+═══════════════════════════════════════════════════ */
+document.getElementById('btnContinue').addEventListener('click',()=>{
+  if(currentIdx === 9){ showLoading(); return; }
+  const next = getNextIdx(currentIdx);
+  if(next==null){ showLoading(); return; }
+  navHistory.push(next);
+  goTo(next,'fwd');
+});
+
+document.getElementById('btnBack').addEventListener('click',()=>{
+  if(navHistory.length<=1) return;
+  navHistory.pop();
+  const prev = navHistory[navHistory.length-1];
+  goTo(prev,'back');
+});
+
+/* ═══════════════════════════════════════════════════
+   LOADING SCREEN
+═══════════════════════════════════════════════════ */
+function showLoading(){
+  const screen = document.getElementById('loadingScreen');
+  screen.classList.add('show');
+
+  const ring = document.getElementById('loadingRing');
+  const circ = 2*Math.PI*52;
+  gsap.to({v:0},{v:1,duration:3.5,ease:'power1.inOut',
+    onUpdate(){ ring.setAttribute('stroke-dasharray', `${this._targets[0].v*circ} ${circ}`); }
+  });
+
+  const msgs = ['Analyse de ton profil…','Recherche des meilleurs coachs…','Calcul du matching…'];
+  let mi = 0;
+  const txt = document.getElementById('loadingText');
+  txt.innerHTML = msgs[0];
+
+  const cycle = setInterval(()=>{
+    mi++;
+    if(mi >= msgs.length){ clearInterval(cycle); return; }
+    gsap.to(txt,{opacity:0,duration:.3,onComplete:()=>{
+      txt.textContent = msgs[mi];
+      gsap.to(txt,{opacity:1,duration:.3});
+    }});
+  }, 1500);
+
+  setTimeout(()=>{
+    document.getElementById('redirectMsg').classList.add('show');
+  }, 4800);
+
+  setTimeout(()=>{
+    window.location.href = 'recherche.html';
+  }, 6000);
+}
+
+/* ═══════════════════════════════════════════════════
+   CURSOR
+═══════════════════════════════════════════════════ */
+const isTouch = ('ontouchstart' in window)||navigator.maxTouchPoints>0;
+if(isTouch) document.body.classList.add('touch');
+
+const cd = document.getElementById('cd');
+const cr = document.getElementById('cr');
+
+function bindCursorHover(){
+  document.querySelectorAll('a,button,.sport-card,.opt-card,.delay-btn,.toggle-btn,.level-pip,.sugg-item,.sim-card').forEach(el=>{
+    el.addEventListener('mouseenter',()=>{cd.classList.add('h');cr.classList.add('h')});
+    el.addEventListener('mouseleave',()=>{cd.classList.remove('h');cr.classList.remove('h')});
+  });
+}
+
+if(!isTouch){
+  const qx = gsap.quickTo(cr,'x',{duration:.14,ease:'none'});
+  const qy = gsap.quickTo(cr,'y',{duration:.14,ease:'none'});
+  document.addEventListener('mousemove',e=>{
+    gsap.set(cd,{x:e.clientX,y:e.clientY});
+    qx(e.clientX); qy(e.clientY);
+  });
+}
+
+/* ═══════════════════════════════════════════════════
+   MAGNETIC BUTTON
+═══════════════════════════════════════════════════ */
+if(!isTouch){
+  const zone = document.querySelector('.mz');
+  const btn  = document.getElementById('btnContinue');
+  zone.addEventListener('mousemove',e=>{
+    const r=zone.getBoundingClientRect();
+    const x=gsap.utils.mapRange(r.left,r.right,-r.width/2,r.width/2,e.clientX);
+    const y=gsap.utils.mapRange(r.top,r.bottom,-r.height/2,r.height/2,e.clientY);
+    gsap.to(btn,{x:x*.3,y:y*.3,duration:.4,ease:'power2.out',overwrite:true});
+  });
+  zone.addEventListener('mouseleave',()=>{
+    gsap.to(btn,{x:0,y:0,duration:.7,ease:'elastic.out(1,.4)',overwrite:true});
+  });
+}
+
+/* ═══════════════════════════════════════════════════
+   INIT
+═══════════════════════════════════════════════════ */
+(function init(){
+  const content = document.getElementById('stepContent');
+  content.innerHTML = renderStep(0);
+  bindStep(0);
+  updateProgress(0);
+  setContinue(false,'Continuer');
+  if(!isTouch) bindCursorHover();
+
+  // Entrance animation
+  gsap.from(content,{opacity:0,y:30,duration:.7,ease:'power3.out',delay:.1});
+  gsap.from('.header',{opacity:0,y:-16,duration:.6,ease:'power2.out',delay:.05});
+  gsap.from('.bottom-cta',{opacity:0,y:20,duration:.6,ease:'power2.out',delay:.2});
+})();
+</script>
+</body>
+</html>

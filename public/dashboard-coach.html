@@ -1,0 +1,1149 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SKARP — Coach Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--lime:#C6FF34;--carbon:#171717;--c2:#262626;--c3:#303030;--white:#fff;--red:#FF4D4D;--orange:#FF8C42;--B:'Barlow Condensed',sans-serif;--S:'DM Sans',sans-serif;--sb:244px}
+html,body{height:100%;overflow:hidden}
+body{background:var(--carbon);color:var(--white);font-family:var(--S);font-size:15px;cursor:none}
+body.touch{cursor:auto}
+a{color:inherit;text-decoration:none}
+button{cursor:none;border:none;background:none;font-family:var(--S);color:inherit}
+body.touch button{cursor:pointer}
+input,textarea,select{font-family:var(--S);color:var(--white)}
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1)}
+
+/* CURSOR */
+#cd{position:fixed;width:8px;height:8px;background:var(--lime);border-radius:50%;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);transition:width .12s,height .12s}
+#cr{position:fixed;width:32px;height:32px;border:1.5px solid rgba(255,255,255,.4);border-radius:50%;pointer-events:none;z-index:9998;transform:translate(-50%,-50%);transition:border-color .2s,width .2s,height .2s}
+#cd.h{width:12px;height:12px}#cr.h{width:42px;height:42px;border-color:var(--lime)}
+
+/* LAYOUT */
+.app{display:flex;height:100vh;overflow:hidden}
+
+/* SIDEBAR */
+.sidebar{width:var(--sb);flex-shrink:0;background:#111;border-right:1px solid rgba(255,255,255,.05);display:flex;flex-direction:column;overflow-y:auto}
+.sb-logo{padding:22px 20px 18px;border-bottom:1px solid rgba(255,255,255,.05)}
+.sb-logo a{font-family:var(--B);font-size:26px;font-weight:800}
+.sb-logo a b{color:var(--lime)}
+.sb-user{padding:16px 20px;border-bottom:1px solid rgba(255,255,255,.05);display:flex;align-items:center;gap:12px}
+.sb-av{width:40px;height:40px;border-radius:50%;object-fit:cover;border:2px solid rgba(198,255,52,.35);flex-shrink:0}
+.sb-uinfo .sb-name{font-weight:500;font-size:14px}
+.sb-uinfo .sb-verif{font-size:10px;color:var(--lime);letter-spacing:.05em;text-transform:uppercase;display:flex;align-items:center;gap:4px;margin-top:2px}
+.sb-uinfo .sb-verif svg{width:10px;height:10px;stroke:var(--lime);fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.sb-nav{flex:1;padding:8px 0}
+.nav-item{display:flex;align-items:center;gap:12px;padding:11px 20px;font-size:14px;font-weight:500;cursor:none;transition:background .18s,color .18s;border-left:2px solid transparent;width:100%;text-align:left}
+body.touch .nav-item{cursor:pointer}
+.nav-item svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0;transition:stroke .18s}
+.nav-item:hover{background:rgba(255,255,255,.04);color:var(--lime)}
+.nav-item.active{background:var(--lime);color:var(--carbon)}
+.nav-item.active svg{stroke:var(--carbon)}
+.nav-badge{margin-left:auto;font-size:10px;font-weight:700;border-radius:10px;padding:1px 7px;min-width:18px;text-align:center}
+.nav-badge.red{background:var(--red);color:#fff}
+.nav-badge.lime{background:var(--lime);color:var(--carbon)}
+.nav-item.active .nav-badge{background:var(--carbon)}
+.sb-bottom{padding:14px 20px;border-top:1px solid rgba(255,255,255,.05)}
+.btn-logout{display:flex;align-items:center;gap:10px;font-size:13px;color:rgba(255,255,255,.3);cursor:none;transition:color .2s;background:none;border:none;width:100%;padding:8px 0}
+body.touch .btn-logout{cursor:pointer}
+.btn-logout:hover{color:var(--red)}
+.btn-logout svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+
+/* MAIN */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
+
+/* TOPBAR */
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:0 28px;height:60px;border-bottom:1px solid rgba(255,255,255,.05);background:#111;flex-shrink:0}
+.topbar-title{font-family:var(--B);font-size:22px;font-weight:800;text-transform:uppercase;letter-spacing:.02em}
+.topbar-r{display:flex;align-items:center;gap:14px}
+.notif-btn{position:relative;display:flex;align-items:center;justify-content:center;width:36px;height:36px;cursor:none;transition:color .2s}
+body.touch .notif-btn{cursor:pointer}
+.notif-btn:hover{color:var(--lime)}
+.notif-btn svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.notif-dot{position:absolute;top:5px;right:5px;width:9px;height:9px;border-radius:50%;border:2px solid #111}
+.notif-dot.red{background:var(--red)}
+.notif-dot.lime{background:var(--lime)}
+
+/* CONTENT */
+.content{flex:1;overflow-y:auto;padding:26px 28px 48px}
+.view{display:none;animation:fadeV .3s ease}
+.view.active{display:block}
+@keyframes fadeV{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+
+/* COMMON */
+.sec-title{font-family:var(--B);font-size:clamp(20px,2.2vw,30px);font-weight:800;text-transform:uppercase;letter-spacing:.01em;margin-bottom:14px}
+.sec-title b{color:var(--lime)}
+.card{background:var(--c2);border:1px solid rgba(255,255,255,.06);padding:18px 20px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.mz{position:relative;display:inline-block}
+.btn-lime{font-family:var(--B);font-size:15px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;background:var(--lime);color:var(--carbon);padding:10px 24px;cursor:none;border:none;display:inline-block;transition:background .2s}
+body.touch .btn-lime{cursor:pointer}
+.btn-lime:hover{background:#d4ff5a}
+.btn-outline{font-family:var(--B);font-size:14px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;border:1.5px solid rgba(255,255,255,.15);color:rgba(255,255,255,.6);padding:9px 20px;cursor:none;transition:border-color .2s,color .2s;background:transparent;display:inline-block}
+body.touch .btn-outline{cursor:pointer}
+.btn-outline:hover{border-color:var(--lime);color:var(--lime)}
+.btn-sm{font-family:var(--B);font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;border:1px solid rgba(255,255,255,.12);color:rgba(255,255,255,.45);padding:6px 14px;cursor:none;transition:all .2s;background:transparent}
+body.touch .btn-sm{cursor:pointer}
+.btn-sm:hover{border-color:var(--lime);color:var(--lime)}
+.btn-sm.danger{border-color:rgba(255,77,77,.2);color:rgba(255,120,120,.5)}
+.btn-sm.danger:hover{border-color:var(--red);color:var(--red)}
+.badge{font-size:10px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;padding:3px 9px;border-radius:20px}
+.badge.actif{background:rgba(198,255,52,.12);color:var(--lime);border:1px solid rgba(198,255,52,.25)}
+.badge.essai{background:rgba(255,140,66,.1);color:var(--orange);border:1px solid rgba(255,140,66,.25)}
+.badge.pause{background:rgba(255,255,255,.05);color:rgba(255,255,255,.3);border:1px solid rgba(255,255,255,.1)}
+.lbl{font-size:11px;color:rgba(255,255,255,.3);letter-spacing:.06em;text-transform:uppercase;font-weight:500}
+
+/* TOAST */
+.toast{position:fixed;top:18px;right:18px;z-index:600;background:var(--c2);border:1px solid rgba(255,255,255,.08);border-left:3px solid var(--lime);padding:13px 16px;min-width:230px;max-width:300px;display:flex;align-items:center;gap:10px;transform:translateX(340px);opacity:0;transition:transform .32s cubic-bezier(.4,0,.2,1),opacity .32s}
+.toast.show{transform:translateX(0);opacity:1}
+.toast svg{width:16px;height:16px;stroke:var(--lime);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+.toast-body b{display:block;font-size:13px;font-weight:500}
+.toast-body span{font-size:12px;color:rgba(255,255,255,.4)}
+
+/* MODALS */
+.modal-bd{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:300;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .25s}
+.modal-bd.open{opacity:1;pointer-events:all}
+.modal-box{background:var(--c2);border:1px solid rgba(255,255,255,.08);padding:26px 30px;width:min(540px,95vw);max-height:88vh;overflow-y:auto;transform:scale(.94);transition:transform .28s;position:relative}
+.modal-bd.open .modal-box{transform:scale(1)}
+.modal-title{font-family:var(--B);font-size:22px;font-weight:800;text-transform:uppercase;margin-bottom:18px}
+.modal-close{position:absolute;top:14px;right:14px;width:28px;height:28px;border:1px solid rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.35);cursor:none;font-size:15px;transition:all .2s;background:transparent}
+body.touch .modal-close{cursor:pointer}
+.modal-close:hover{border-color:var(--lime);color:var(--lime)}
+.modal-ta{width:100%;background:rgba(255,255,255,.04);border:1.5px solid rgba(255,255,255,.08);color:var(--white);padding:12px;font-size:14px;line-height:1.7;resize:none;height:110px;outline:none;transition:border-color .2s;margin-bottom:16px}
+.modal-ta:focus{border-color:rgba(198,255,52,.3)}
+.modal-ta::placeholder{color:rgba(255,255,255,.2)}
+.form-g{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
+.form-l{font-size:11px;color:rgba(255,255,255,.3);letter-spacing:.07em;text-transform:uppercase;font-weight:500}
+.form-i{background:rgba(255,255,255,.04);border:1.5px solid rgba(255,255,255,.08);color:var(--white);padding:10px 12px;font-size:14px;outline:none;width:100%;transition:border-color .2s}
+.form-i:focus{border-color:rgba(198,255,52,.3)}
+.form-i::placeholder{color:rgba(255,255,255,.2)}
+.form-s{background:var(--c3);border:1.5px solid rgba(255,255,255,.08);color:var(--white);padding:10px 12px;font-size:14px;outline:none;width:100%;-webkit-appearance:none;appearance:none;cursor:none;transition:border-color .2s}
+body.touch .form-s{cursor:pointer}
+.form-s:focus{border-color:rgba(198,255,52,.3)}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+
+/* DASHBOARD */
+.welcome{margin-bottom:20px}
+.welcome h1{font-family:var(--B);font-size:clamp(32px,4vw,54px);font-weight:800;text-transform:uppercase;line-height:.95;letter-spacing:-.01em}
+.welcome h1 b{color:var(--lime)}
+.welcome p{font-size:13px;color:rgba(255,255,255,.4);margin-top:6px}
+.alert-card{border:1.5px solid rgba(255,77,77,.3);background:rgba(255,77,77,.05);padding:16px 20px;display:flex;align-items:center;gap:16px;margin-bottom:14px;flex-wrap:wrap}
+.alert-card-text{flex:1;min-width:0}
+.alert-card-text b{display:block;font-size:14px;font-weight:500;margin-bottom:2px}
+.alert-card-text span{font-size:13px;color:rgba(255,255,255,.4)}
+.pulse-dot{width:10px;height:10px;border-radius:50%;background:var(--red);flex-shrink:0;animation:pulseRed 2s infinite}
+@keyframes pulseRed{0%,100%{box-shadow:0 0 0 0 rgba(255,77,77,.4)}50%{box-shadow:0 0 0 6px rgba(255,77,77,0)}}
+.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+.kpi-card{background:var(--c2);border:1px solid rgba(255,255,255,.06);padding:16px 18px}
+.kpi-val{font-family:var(--B);font-size:36px;font-weight:800;line-height:1;margin-bottom:4px}
+.kpi-val.lime{color:var(--lime)}
+.kpi-lbl{font-size:11px;color:rgba(255,255,255,.3);letter-spacing:.05em;text-transform:uppercase}
+.kpi-delta{font-size:12px;margin-top:5px}
+.kpi-delta.up{color:#4ade80}
+.kpi-delta.neutral{color:rgba(255,255,255,.25)}
+.conv-bar{height:4px;background:rgba(255,255,255,.08);margin-top:8px;overflow:hidden}
+.conv-fill{height:100%;background:var(--lime);transition:width 1.2s ease}
+.eleve-row{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid rgba(255,255,255,.04);cursor:none;transition:background .15s}
+body.touch .eleve-row{cursor:pointer}
+.eleve-row:last-child{border-bottom:none}
+.eleve-row:hover{background:rgba(255,255,255,.02)}
+.eleve-av-wrap{position:relative;flex-shrink:0}
+.eleve-av{width:36px;height:36px;border-radius:50%;object-fit:cover}
+.eleve-alert-dot{position:absolute;top:-1px;right:-1px;width:9px;height:9px;border-radius:50%;background:var(--red);border:2px solid var(--c2)}
+.eleve-info{flex:1;min-width:0}
+.eleve-name{font-size:14px;font-weight:500;margin-bottom:2px}
+.eleve-meta{font-size:12px;color:rgba(255,255,255,.3)}
+.eleve-last{font-size:12px;color:rgba(255,255,255,.25);text-align:right;flex-shrink:0}
+.bilan-recv-card{background:var(--c2);border:1px solid rgba(255,255,255,.06);padding:14px 16px;display:flex;align-items:center;gap:14px;margin-bottom:8px}
+.bilan-recv-scores{display:flex;gap:10px}
+.bscore{display:flex;flex-direction:column;align-items:center;gap:2px}
+.bscore-num{font-family:var(--B);font-size:22px;font-weight:800;line-height:1}
+.bscore-lbl{font-size:9px;color:rgba(255,255,255,.25);text-transform:uppercase;letter-spacing:.05em}
+.bscore.fat .bscore-num{color:var(--red)}
+.bscore.mor .bscore-num{color:var(--lime)}
+.bscore-sep{width:1px;height:30px;background:rgba(255,255,255,.07);margin:auto 0}
+.bilan-recv-info{flex:1;min-width:0}
+.bilan-recv-name{font-size:14px;font-weight:500;margin-bottom:2px}
+.bilan-recv-excerpt{font-size:12px;color:rgba(255,255,255,.35);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.timeline-item{display:flex;align-items:flex-start;gap:12px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.04)}
+.timeline-item:last-child{border-bottom:none}
+.tl-icon{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.tl-icon svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.tl-icon.msg{background:rgba(198,255,52,.1);color:var(--lime)}
+.tl-icon.avis{background:rgba(255,200,0,.08);color:#fbbf24}
+.tl-icon.pay{background:rgba(34,197,94,.08);color:#4ade80}
+.tl-icon.alert{background:rgba(255,77,77,.1);color:var(--red)}
+.tl-text{flex:1;min-width:0}
+.tl-text b{display:block;font-size:13px;font-weight:500;margin-bottom:2px}
+.tl-time{font-size:11px;color:rgba(255,255,255,.2);flex-shrink:0;margin-top:2px}
+
+/* ELEVES VIEW */
+.filter-bar{display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap}
+.search-i{background:var(--c2);border:1.5px solid rgba(255,255,255,.08);color:var(--white);padding:9px 14px;font-size:13px;outline:none;flex:1;min-width:180px;max-width:300px;transition:border-color .2s}
+.search-i::placeholder{color:rgba(255,255,255,.2)}
+.search-i:focus{border-color:rgba(198,255,52,.3)}
+.ftab{font-family:var(--B);font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;padding:8px 16px;cursor:none;border:1px solid rgba(255,255,255,.1);background:transparent;color:rgba(255,255,255,.4);transition:all .2s}
+body.touch .ftab{cursor:pointer}
+.ftab.active{background:var(--lime);color:var(--carbon);border-color:var(--lime)}
+.ftab:hover:not(.active){border-color:rgba(198,255,52,.3);color:var(--lime)}
+.eleves-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px}
+.eleve-card{background:var(--c2);border:1.5px solid rgba(255,255,255,.06);padding:18px;cursor:none;transition:border-color .25s,transform .2s;position:relative}
+body.touch .eleve-card{cursor:pointer}
+.eleve-card:hover{border-color:rgba(198,255,52,.3);transform:translateY(-3px)}
+.eleve-card-alert{position:absolute;top:12px;right:12px;width:10px;height:10px;border-radius:50%;background:var(--red);animation:pulseRed 2s infinite}
+.eleve-card-top{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.eleve-card-av{width:46px;height:46px;border-radius:50%;object-fit:cover;border:2px solid rgba(198,255,52,.2)}
+.eleve-card-name{font-family:var(--B);font-size:20px;font-weight:800;text-transform:uppercase;margin-bottom:2px}
+.eleve-card-meta{font-size:12px;color:rgba(255,255,255,.35)}
+.eleve-card-stats{display:flex;gap:14px;padding-top:12px;border-top:1px solid rgba(255,255,255,.05)}
+.eleve-stat{display:flex;flex-direction:column;gap:2px}
+.eleve-stat-v{font-family:var(--B);font-size:18px;font-weight:800;color:var(--lime)}
+.eleve-stat-l{font-size:10px;color:rgba(255,255,255,.25);text-transform:uppercase;letter-spacing:.05em}
+
+/* ELEVE DETAIL PANEL */
+.detail-panel{position:fixed;inset:0;z-index:250;display:flex;pointer-events:none}
+.detail-panel.open{pointer-events:all}
+.detail-overlay{flex:1;background:rgba(0,0,0,.5);opacity:0;transition:opacity .3s}
+.detail-panel.open .detail-overlay{opacity:1}
+.detail-drawer{width:min(600px,95vw);background:var(--c2);border-left:1px solid rgba(255,255,255,.07);overflow-y:auto;transform:translateX(100%);transition:transform .35s cubic-bezier(.4,0,.2,1);padding:28px 26px;position:relative}
+.detail-panel.open .detail-drawer{transform:translateX(0)}
+.detail-close{position:absolute;top:16px;right:16px;width:30px;height:30px;border:1px solid rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.35);cursor:none;font-size:15px;transition:all .2s;background:transparent}
+body.touch .detail-close{cursor:pointer}
+.detail-close:hover{border-color:var(--lime);color:var(--lime)}
+.detail-header{display:flex;align-items:center;gap:16px;margin-bottom:24px}
+.detail-av{width:56px;height:56px;border-radius:50%;object-fit:cover;border:2px solid rgba(198,255,52,.3)}
+.detail-name{font-family:var(--B);font-size:28px;font-weight:800;text-transform:uppercase;margin-bottom:2px}
+.detail-sub{font-size:13px;color:rgba(255,255,255,.35)}
+.detail-tabs{display:flex;margin-bottom:20px;border-bottom:1px solid rgba(255,255,255,.06)}
+.dtab{font-family:var(--B);font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;padding:10px 16px;cursor:none;color:rgba(255,255,255,.3);border-bottom:2px solid transparent;transition:color .2s,border-color .2s;background:none;border-top:none;border-left:none;border-right:none}
+body.touch .dtab{cursor:pointer}
+.dtab.active{color:var(--lime);border-bottom-color:var(--lime)}
+.dtab-content{display:none}
+.dtab-content.active{display:block}
+.plan-week-mini{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin-bottom:16px}
+.plan-day-mini{background:var(--c3);padding:6px 4px;text-align:center;font-size:10px;border:1px solid transparent;transition:border-color .2s}
+.plan-day-mini:hover{border-color:rgba(198,255,52,.3)}
+.plan-day-mini.has-session{border-color:rgba(198,255,52,.25)}
+.plan-day-mini .pday-name{color:rgba(255,255,255,.25);margin-bottom:4px;letter-spacing:.05em;text-transform:uppercase}
+.plan-day-mini .pday-sess{color:rgba(198,255,52,.7);font-weight:500;font-size:9px}
+.detail-action-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:20px}
+
+/* PROGRAMMES VIEW */
+.prog-tabs{display:flex;margin-bottom:20px;border:1.5px solid rgba(255,255,255,.1);width:fit-content}
+.ptab{font-family:var(--B);font-size:14px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;padding:9px 22px;cursor:none;color:rgba(255,255,255,.4);transition:background .2s,color .2s;background:transparent;border:none}
+body.touch .ptab{cursor:pointer}
+.ptab.active{background:var(--lime);color:var(--carbon)}
+.ptab-content{display:none}
+.ptab-content.active{display:block}
+.coaching-config{max-width:520px;display:flex;flex-direction:column;gap:16px}
+.prog-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px;margin-top:16px}
+.prog-card-c{background:var(--c2);border:1.5px solid rgba(255,255,255,.06);overflow:hidden;transition:border-color .25s}
+.prog-card-c:hover{border-color:rgba(198,255,52,.25)}
+.prog-img-c{aspect-ratio:16/9;overflow:hidden}
+.prog-img-c img{width:100%;height:100%;object-fit:cover;transition:transform .4s}
+.prog-card-c:hover .prog-img-c img{transform:scale(1.05)}
+.prog-body-c{padding:14px}
+.prog-title-c{font-family:var(--B);font-size:17px;font-weight:800;text-transform:uppercase;margin-bottom:6px}
+.prog-meta-row{display:flex;justify-content:space-between;align-items:center;margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,.05)}
+.prog-price-c{font-family:var(--B);font-size:20px;font-weight:800;color:var(--lime)}
+.prog-sales{font-size:11px;color:rgba(255,255,255,.25)}
+.prog-actions{display:flex;gap:8px;margin-top:10px}
+.q-list{display:flex;flex-direction:column;gap:8px;margin-top:8px}
+.q-item{display:flex;align-items:center;justify-content:space-between;background:var(--c3);padding:10px 14px;font-size:13px}
+.q-item .q-del{font-size:18px;color:rgba(255,77,77,.4);cursor:none;transition:color .2s;background:none;border:none;line-height:1}
+body.touch .q-item .q-del{cursor:pointer}
+.q-item .q-del:hover{color:var(--red)}
+
+/* CALENDRIER VIEW */
+.cal-week-header{display:grid;grid-template-columns:60px repeat(7,1fr);gap:4px;margin-bottom:2px}
+.cal-week-header .cday{text-align:center;font-size:11px;color:rgba(255,255,255,.3);letter-spacing:.06em;text-transform:uppercase;padding:8px 0}
+.cal-week-header .cday.today-col{color:var(--lime)}
+.cal-grid-coach{display:grid;grid-template-columns:60px repeat(7,1fr);gap:4px}
+.cal-time-col{display:flex;flex-direction:column}
+.cal-time-slot{height:52px;display:flex;align-items:flex-start;font-size:10px;color:rgba(255,255,255,.2);padding-top:4px;letter-spacing:.04em}
+.cal-day-col{display:flex;flex-direction:column;gap:2px}
+.cal-slot{height:52px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.04);cursor:none;transition:background .15s,border-color .15s;display:flex;align-items:center;justify-content:center;font-size:11px;color:rgba(255,255,255,.15)}
+body.touch .cal-slot{cursor:pointer}
+.cal-slot:hover{background:rgba(198,255,52,.06);border-color:rgba(198,255,52,.2);color:var(--lime)}
+.cal-slot.available{background:rgba(198,255,52,.08);border-color:rgba(198,255,52,.25);color:rgba(198,255,52,.6)}
+.cal-slot.booked{background:rgba(198,255,52,.18);border-color:var(--lime);color:var(--carbon);font-weight:500}
+.cal-slot.booked:hover{background:rgba(198,255,52,.22)}
+
+/* MESSAGERIE VIEW */
+.chat-layout{display:grid;grid-template-columns:220px 1fr;height:calc(100vh - 60px - 80px);border:1px solid rgba(255,255,255,.06)}
+.chat-list{border-right:1px solid rgba(255,255,255,.05);overflow-y:auto}
+.chat-conv{padding:12px 14px;display:flex;align-items:center;gap:10px;cursor:none;transition:background .15s;border-bottom:1px solid rgba(255,255,255,.04);position:relative}
+body.touch .chat-conv{cursor:pointer}
+.chat-conv.active,.chat-conv:hover{background:rgba(198,255,52,.05)}
+.chat-conv-av{width:36px;height:36px;border-radius:50%;object-fit:cover;flex-shrink:0}
+.chat-conv-info{min-width:0;flex:1}
+.chat-conv-name{font-size:13px;font-weight:500;margin-bottom:2px}
+.chat-conv-last{font-size:11px;color:rgba(255,255,255,.3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chat-unread{position:absolute;top:10px;right:10px;width:16px;height:16px;background:var(--lime);border-radius:50%;font-size:9px;font-weight:700;color:var(--carbon);display:flex;align-items:center;justify-content:center}
+.chat-window{display:flex;flex-direction:column}
+.chat-hdr{padding:12px 18px;border-bottom:1px solid rgba(255,255,255,.05);display:flex;align-items:center;gap:10px;flex-shrink:0}
+.chat-hdr-av{width:32px;height:32px;border-radius:50%;object-fit:cover;border:2px solid rgba(198,255,52,.2)}
+.chat-hdr-name{font-weight:500;font-size:14px}
+.chat-hdr-status{font-size:11px;color:rgba(198,255,52,.5);display:flex;align-items:center;gap:4px}
+.chat-hdr-status::before{content:'';width:5px;height:5px;border-radius:50%;background:var(--lime)}
+.chat-msgs{flex:1;overflow-y:auto;padding:18px;display:flex;flex-direction:column;gap:12px}
+.bubble-row{display:flex;align-items:flex-end;gap:7px}
+.bubble-row.me{flex-direction:row-reverse}
+.bav{width:26px;height:26px;border-radius:50%;object-fit:cover;flex-shrink:0}
+.bubble{max-width:68%;padding:10px 13px;font-size:13px;line-height:1.65}
+.bubble.other{background:var(--c3);border:1px solid rgba(255,255,255,.06)}
+.bubble.me{background:var(--lime);color:var(--carbon)}
+.btime{font-size:10px;color:rgba(255,255,255,.2);margin-top:3px;display:block}
+.bubble.me .btime{color:rgba(23,23,23,.4);text-align:right}
+.chat-input-area{padding:12px 14px;border-top:1px solid rgba(255,255,255,.06);display:flex;gap:8px;flex-shrink:0}
+.chat-input{flex:1;background:var(--c3);border:1px solid rgba(255,255,255,.07);color:var(--white);padding:9px 13px;font-size:13px;outline:none;resize:none;height:40px;transition:border-color .2s}
+.chat-input::placeholder{color:rgba(255,255,255,.2)}
+.chat-input:focus{border-color:rgba(198,255,52,.3)}
+.btn-send{background:var(--lime);color:var(--carbon);border:none;padding:0 16px;cursor:none;transition:background .2s;display:flex;align-items:center}
+body.touch .btn-send{cursor:pointer}
+.btn-send:hover{background:#d4ff5a}
+.btn-send svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+
+/* PROFIL VIEW */
+.profil-wrap{display:grid;grid-template-columns:1fr 280px;gap:24px;align-items:start}
+.profil-form{display:flex;flex-direction:column;gap:14px}
+.card-preview{background:var(--c2);border:1px solid rgba(255,255,255,.07);overflow:hidden;position:sticky;top:0}
+.preview-img{aspect-ratio:4/3;overflow:hidden}
+.preview-img img{width:100%;height:100%;object-fit:cover}
+.preview-body{padding:14px}
+.preview-name{font-family:var(--B);font-size:22px;font-weight:800;text-transform:uppercase;margin-bottom:2px}
+.preview-title{font-size:12px;color:rgba(255,255,255,.35);margin-bottom:8px}
+.preview-price{font-family:var(--B);font-size:18px;font-weight:800;color:var(--lime)}
+.preview-badge{display:inline-flex;align-items:center;gap:5px;background:var(--lime);color:var(--carbon);font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;padding:3px 9px;margin-top:6px}
+.preview-badge svg{width:9px;height:9px;stroke:var(--carbon);fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+
+/* FINANCES VIEW */
+.fin-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px}
+.fin-total{font-family:var(--B);font-size:clamp(36px,5vw,64px);font-weight:800;color:var(--lime);line-height:1}
+.fin-total-lbl{font-size:13px;color:rgba(255,255,255,.35);margin-top:4px}
+.chart-bars{display:flex;align-items:flex-end;gap:10px;height:140px;padding-bottom:24px;border-bottom:1px solid rgba(255,255,255,.06);margin-bottom:20px}
+.chart-bar-wrap{display:flex;flex-direction:column;align-items:center;gap:6px;flex:1}
+.chart-bar{width:100%;border-radius:2px 2px 0 0;transition:opacity .2s;position:relative;cursor:none}
+body.touch .chart-bar{cursor:default}
+.chart-bar:hover{opacity:.8}
+.chart-bar::after{content:attr(data-val);position:absolute;top:-20px;left:50%;transform:translateX(-50%);font-size:10px;color:rgba(255,255,255,.4);white-space:nowrap}
+.chart-bar-lbl{font-size:10px;color:rgba(255,255,255,.25);letter-spacing:.04em;text-transform:uppercase}
+.pend-card{background:rgba(198,255,52,.06);border:1.5px solid rgba(198,255,52,.25);padding:16px 20px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.pend-amount{font-family:var(--B);font-size:32px;font-weight:800;color:var(--lime)}
+.pend-lbl{font-size:12px;color:rgba(198,255,52,.5);letter-spacing:.05em;text-transform:uppercase}
+.tx-table{width:100%;border-collapse:collapse}
+.tx-table th{font-size:11px;color:rgba(255,255,255,.25);letter-spacing:.06em;text-transform:uppercase;padding:8px 12px;text-align:left;border-bottom:1px solid rgba(255,255,255,.06)}
+.tx-table td{padding:12px 12px;border-bottom:1px solid rgba(255,255,255,.04);font-size:13px}
+.tx-table tr:last-child td{border-bottom:none}
+.tx-table tr:hover td{background:rgba(255,255,255,.02)}
+.tx-status{font-size:11px;font-weight:500;padding:3px 9px;border-radius:10px}
+.tx-status.pend{background:rgba(255,200,0,.08);color:#fbbf24;border:1px solid rgba(255,200,0,.2)}
+.tx-status.paid{background:rgba(34,197,94,.08);color:#4ade80;border:1px solid rgba(34,197,94,.2)}
+
+/* MOBILE BOTTOM NAV */
+.mobile-nav{display:none;position:fixed;bottom:0;left:0;right:0;z-index:100;background:#111;border-top:1px solid rgba(255,255,255,.06);flex-direction:row;justify-content:space-around;padding:8px 0 max(8px,env(safe-area-inset-bottom))}
+.mnav-item{display:flex;flex-direction:column;align-items:center;gap:3px;cursor:none;padding:4px 10px;color:rgba(255,255,255,.3);transition:color .2s;background:none;border:none;flex:1}
+body.touch .mnav-item{cursor:pointer}
+.mnav-item svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.mnav-item span{font-size:9px;letter-spacing:.04em;text-transform:uppercase;font-weight:500}
+.mnav-item.active{color:var(--lime)}
+
+/* RESPONSIVE */
+@media(max-width:900px){
+  .sidebar{display:none}
+  .mobile-nav{display:flex}
+  .content{padding:18px 14px 80px}
+  .topbar{padding:0 14px}
+  .kpi-row{grid-template-columns:1fr 1fr}
+  .profil-wrap{grid-template-columns:1fr}
+  .chat-layout{grid-template-columns:1fr;height:auto}
+  .chat-list{display:none}
+}
+@media(max-width:560px){
+  .kpi-row{grid-template-columns:1fr}
+  .g2{grid-template-columns:1fr}
+  .eleves-grid{grid-template-columns:1fr}
+  .prog-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<div id="cd"></div><div id="cr"></div>
+
+<!-- TOAST -->
+<div class="toast" id="toast">
+  <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+  <div class="toast-body"><b id="toastTitle"></b><span id="toastMsg"></span></div>
+</div>
+
+<!-- MODAL ALERTE DOULEUR -->
+<div class="modal-bd" id="modalAlert" role="dialog" aria-modal="true">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeM('modalAlert')">✕</button>
+    <div class="modal-title">Alerte douleur — Thomas Roux</div>
+    <p style="font-size:14px;color:rgba(255,255,255,.55);line-height:1.75;margin-bottom:18px">"J'ai eu une légère gêne au mollet en fin de séance hier soir. La douleur est localisée au milieu du mollet droit, intensité 4/10. Pas de gonflement visible mais un peu tendu ce matin."</p>
+    <div class="form-g"><label class="form-l">Répondre à Thomas</label><textarea class="modal-ta" placeholder="Ta réponse (conseils, ajustements de programme, RDV...)"></textarea></div>
+    <div class="mz"><button class="btn-lime mag-btn" onclick="replyAlert()">Envoyer la réponse</button></div>
+  </div>
+</div>
+
+<!-- MODAL CRÉER PROGRAMME -->
+<div class="modal-bd" id="modalProg" role="dialog" aria-modal="true">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeM('modalProg')">✕</button>
+    <div class="modal-title">Nouveau programme</div>
+    <div class="form-g"><label class="form-l">Titre</label><input class="form-i" type="text" placeholder="Ex: Prépa intersaison rugby 8 semaines"></div>
+    <div class="form-row">
+      <div class="form-g"><label class="form-l">Sport</label>
+        <select class="form-s"><option>Rugby</option><option>Football</option><option>Musculation</option><option>Running</option><option>Autre</option></select>
+      </div>
+      <div class="form-g"><label class="form-l">Niveau</label>
+        <select class="form-s"><option>Tous niveaux</option><option>Débutant</option><option>Intermédiaire</option><option>Avancé</option></select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-g"><label class="form-l">Durée</label><input class="form-i" type="text" placeholder="Ex: 8 semaines"></div>
+      <div class="form-g"><label class="form-l">Prix (€)</label><input class="form-i" type="number" placeholder="49"></div>
+    </div>
+    <div class="form-g"><label class="form-l">Description</label><textarea class="modal-ta" style="height:80px" placeholder="Décris le contenu du programme..."></textarea></div>
+    <div class="form-g"><label class="form-l">Image de couverture</label><input class="form-i" type="file" accept="image/*" style="padding:6px"></div>
+    <div class="mz"><button class="btn-lime mag-btn" onclick="createProg()">Créer le programme</button></div>
+  </div>
+</div>
+
+<!-- MODAL DISPO CRÉNEAU -->
+<div class="modal-bd" id="modalSlot" role="dialog" aria-modal="true">
+  <div class="modal-box" style="max-width:340px">
+    <button class="modal-close" onclick="closeM('modalSlot')">✕</button>
+    <div class="modal-title">Rendre disponible</div>
+    <p style="font-size:13px;color:rgba(255,255,255,.4);margin-bottom:16px" id="slotInfo"></p>
+    <div class="form-g"><label class="form-l">Type</label>
+      <select class="form-s"><option>Séance présentiel</option><option>Appel vidéo</option><option>Bilan physique</option></select>
+    </div>
+    <div class="mz"><button class="btn-lime mag-btn" onclick="confirmSlot()">Confirmer</button></div>
+  </div>
+</div>
+
+<!-- MODAL PARAMÈTRES DISPO -->
+<div class="modal-bd" id="modalDispo" role="dialog" aria-modal="true">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeM('modalDispo')">✕</button>
+    <div class="modal-title">Paramètres de disponibilité</div>
+    <div class="form-g"><label class="form-l">Jours disponibles</label>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:6px">
+        <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer"><input type="checkbox" checked style="accent-color:var(--lime)"> Lun</label>
+        <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer"><input type="checkbox" checked style="accent-color:var(--lime)"> Mar</label>
+        <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer"><input type="checkbox" checked style="accent-color:var(--lime)"> Mer</label>
+        <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer"><input type="checkbox" checked style="accent-color:var(--lime)"> Jeu</label>
+        <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer"><input type="checkbox" checked style="accent-color:var(--lime)"> Ven</label>
+        <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer"><input type="checkbox" style="accent-color:var(--lime)"> Sam</label>
+        <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer"><input type="checkbox" style="accent-color:var(--lime)"> Dim</label>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-g"><label class="form-l">Heure début</label><input class="form-i" type="time" value="09:00"></div>
+      <div class="form-g"><label class="form-l">Heure fin</label><input class="form-i" type="time" value="18:00"></div>
+    </div>
+    <div class="form-g"><label class="form-l">Délai d'annulation minimum</label>
+      <select class="form-s"><option>24h</option><option selected>48h</option><option>72h</option></select>
+    </div>
+    <div class="mz"><button class="btn-lime mag-btn" onclick="saveDispo()">Enregistrer</button></div>
+  </div>
+</div>
+
+<!-- ELEVE DETAIL PANEL -->
+<div class="detail-panel" id="elevePanel">
+  <div class="detail-overlay" onclick="closePanel()"></div>
+  <div class="detail-drawer" id="eleveDrawer"></div>
+</div>
+
+<!-- APP -->
+<div class="app">
+  <aside class="sidebar">
+    <div class="sb-logo"><a href="/landing.html">SKARP<b>.</b></a></div>
+    <div class="sb-user">
+      <img class="sb-av" src="https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=80&q=75" alt="Karim">
+      <div class="sb-uinfo">
+        <div class="sb-name">Karim Mansour</div>
+        <div class="sb-verif"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Diplôme vérifié</div>
+      </div>
+    </div>
+    <nav class="sb-nav">
+      <button class="nav-item active" data-view="dashboard" onclick="SV('dashboard',this)">
+        <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        Tableau de bord <span class="nav-badge red">1</span>
+      </button>
+      <button class="nav-item" data-view="eleves" onclick="SV('eleves',this)">
+        <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Mes élèves
+      </button>
+      <button class="nav-item" data-view="programmes" onclick="SV('programmes',this)">
+        <svg viewBox="0 0 24 24"><path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 4v16"/></svg>
+        Mes programmes
+      </button>
+      <button class="nav-item" data-view="calendrier" onclick="SV('calendrier',this)">
+        <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        Calendrier
+      </button>
+      <button class="nav-item" data-view="messagerie" onclick="SV('messagerie',this)">
+        <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        Messagerie <span class="nav-badge lime">2</span>
+      </button>
+      <button class="nav-item" data-view="profil" onclick="SV('profil',this)">
+        <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        Mon profil
+      </button>
+      <button class="nav-item" data-view="finances" onclick="SV('finances',this)">
+        <svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+        Finances
+      </button>
+    </nav>
+    <div class="sb-bottom">
+      <button class="btn-logout" onclick="window.location.href='skarp-landing.html'">
+        <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Déconnexion
+      </button>
+    </div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="topbar-title" id="topbarTitle">Tableau de bord</div>
+      <div class="topbar-r">
+        <button class="notif-btn" onclick="SV('dashboard',null)">
+          <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          <span class="notif-dot red"></span>
+        </button>
+      </div>
+    </div>
+
+    <div class="content" id="mainContent">
+
+      <!-- ── DASHBOARD ── -->
+      <div class="view active" id="view-dashboard">
+        <div class="welcome">
+          <h1>BONJOUR <b>KARIM</b></h1>
+          <p>Tu as <b>3 nouvelles notifications</b> aujourd'hui — dont 1 alerte douleur urgente.</p>
+        </div>
+        <div class="alert-card">
+          <div class="pulse-dot"></div>
+          <div class="alert-card-text">
+            <b>Thomas Roux a signalé une douleur</b>
+            <span>Gêne au mollet droit en fin de séance — il y a 2 heures</span>
+          </div>
+          <div class="mz"><button class="btn-lime mag-btn" onclick="openM('modalAlert')">Voir le détail</button></div>
+        </div>
+        <div class="kpi-row">
+          <div class="kpi-card"><div class="kpi-val" id="kpi0">0</div><div class="kpi-lbl">Élèves actifs</div><div class="kpi-delta up">+2 ce mois</div></div>
+          <div class="kpi-card"><div class="kpi-val" id="kpi1">0</div><div class="kpi-lbl">Essais gratuits</div><div class="kpi-delta neutral">2 se terminent cette semaine</div></div>
+          <div class="kpi-card"><div class="kpi-val lime" id="kpi2">0€</div><div class="kpi-lbl">CA du mois</div><div class="kpi-delta up">+18% vs juin</div></div>
+          <div class="kpi-card">
+            <div class="kpi-val" id="kpi3">0%</div>
+            <div class="kpi-lbl">Taux conversion</div>
+            <div class="conv-bar"><div class="conv-fill" id="convFill" style="width:0%"></div></div>
+          </div>
+        </div>
+        <div class="g2" style="margin-bottom:18px">
+          <div>
+            <div class="sec-title">ÉLÈVES <b>RÉCENTS</b></div>
+            <div class="card" id="dashElevesRecents"></div>
+          </div>
+          <div>
+            <div class="sec-title">BILANS <b>REÇUS</b></div>
+            <div id="dashBilansRecus"></div>
+          </div>
+        </div>
+        <div class="sec-title">ACTIVITÉ <b>RÉCENTE</b></div>
+        <div class="card" id="dashActivite"></div>
+      </div>
+
+      <!-- ── ÉLÈVES ── -->
+      <div class="view" id="view-eleves">
+        <div class="sec-title">MES <b>ÉLÈVES</b></div>
+        <div class="filter-bar">
+          <input class="search-i" type="text" placeholder="Rechercher un élève…" oninput="filterEleves(this.value)">
+          <button class="ftab active" data-filter="Tous" onclick="filterTab(this)">Tous</button>
+          <button class="ftab" data-filter="Actifs" onclick="filterTab(this)">Actifs</button>
+          <button class="ftab" data-filter="Essai" onclick="filterTab(this)">Essai</button>
+          <button class="ftab" data-filter="En pause" onclick="filterTab(this)">En pause</button>
+        </div>
+        <div class="eleves-grid" id="elevesGrid"></div>
+      </div>
+
+      <!-- ── PROGRAMMES ── -->
+      <div class="view" id="view-programmes">
+        <div class="sec-title">MES <b>PROGRAMMES</b></div>
+        <div class="prog-tabs">
+          <button class="ptab active" onclick="PT('perso',this)">Coaching personnalisé</button>
+          <button class="ptab" onclick="PT('univ',this)">Programmes universels</button>
+        </div>
+        <div class="ptab-content active" id="pt-perso">
+          <div class="coaching-config">
+            <div class="form-g"><label class="form-l">Tarif mensuel (€)</label><input class="form-i" type="number" value="120" style="max-width:180px"></div>
+            <div class="form-g"><label class="form-l">Durée essai gratuit</label>
+              <select class="form-s" style="max-width:200px"><option>3 jours</option><option selected>5 jours</option><option>7 jours</option></select>
+            </div>
+            <div>
+              <div class="form-l" style="margin-bottom:10px">Questions de qualification</div>
+              <div class="q-list" id="qList">
+                <div class="q-item">Quel est ton sport principal ?<button class="q-del" onclick="delQ(this)">×</button></div>
+                <div class="q-item">Quel est ton objectif principal ?<button class="q-del" onclick="delQ(this)">×</button></div>
+                <div class="q-item">As-tu des blessures ou contraintes ?<button class="q-del" onclick="delQ(this)">×</button></div>
+                <div class="q-item">Quel est ton niveau de pratique ?<button class="q-del" onclick="delQ(this)">×</button></div>
+              </div>
+              <div style="display:flex;gap:10px;margin-top:10px;align-items:center">
+                <input class="form-i" type="text" id="newQInput" placeholder="Nouvelle question…" style="flex:1">
+                <div class="mz"><button class="btn-lime mag-btn" onclick="addQ()">Ajouter</button></div>
+              </div>
+            </div>
+            <div class="mz"><button class="btn-lime mag-btn" onclick="showToast('Paramètres enregistrés','Ton offre de coaching est à jour.')">Enregistrer</button></div>
+          </div>
+        </div>
+        <div class="ptab-content" id="pt-univ">
+          <div class="mz" style="margin-bottom:18px"><button class="btn-lime mag-btn" onclick="openM('modalProg')">+ Créer un programme</button></div>
+          <div class="prog-grid" id="progGrid"></div>
+        </div>
+      </div>
+
+      <!-- ── CALENDRIER ── -->
+      <div class="view" id="view-calendrier">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:12px">
+          <div class="sec-title" style="margin-bottom:0">CALENDRIER <b>SEMAINE</b></div>
+          <div class="mz"><button class="btn-outline mag-btn" onclick="openM('modalDispo')">Paramètres de disponibilité</button></div>
+        </div>
+        <div style="display:flex;gap:12px;margin-bottom:14px;flex-wrap:wrap">
+          <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:rgba(255,255,255,.4)"><div style="width:12px;height:12px;background:rgba(198,255,52,.08);border:1px solid rgba(198,255,52,.25)"></div>Disponible</div>
+          <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:rgba(255,255,255,.4)"><div style="width:12px;height:12px;background:rgba(198,255,52,.18);border:1px solid var(--lime)"></div>Réservé</div>
+          <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:rgba(255,255,255,.4)"><div style="width:12px;height:12px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.05)"></div>Libre</div>
+        </div>
+        <div style="overflow-x:auto"><div id="calCoach" style="min-width:600px"></div></div>
+      </div>
+
+      <!-- ── MESSAGERIE ── -->
+      <div class="view" id="view-messagerie">
+        <div class="sec-title">MESSAGERIE</div>
+        <div class="chat-layout">
+          <div class="chat-list" id="chatList"></div>
+          <div class="chat-window">
+            <div class="chat-hdr" id="chatHdr"></div>
+            <div class="chat-msgs" id="chatMsgs"></div>
+            <div class="chat-input-area">
+              <textarea class="chat-input" id="chatInput" placeholder="Écris un message…" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMsg()}"></textarea>
+              <button class="btn-send" onclick="sendMsg()"><svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg></button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── PROFIL ── -->
+      <div class="view" id="view-profil">
+        <div class="sec-title">MON <b>PROFIL</b></div>
+        <div class="profil-wrap">
+          <form class="profil-form" onsubmit="saveProfil(event)">
+            <div class="form-row">
+              <div class="form-g"><label class="form-l">Prénom</label><input class="form-i" type="text" value="Karim"></div>
+              <div class="form-g"><label class="form-l">Nom</label><input class="form-i" type="text" value="Mansour"></div>
+            </div>
+            <div class="form-g"><label class="form-l">Spécialité</label><input class="form-i" type="text" value="Préparateur physique · Rugby & performance athlétique"></div>
+            <div class="form-g"><label class="form-l">Sports coachés</label><input class="form-i" type="text" value="Rugby, Musculation, Athlétisme"></div>
+            <div class="form-g"><label class="form-l">Diplômes / Certifications</label><input class="form-i" type="text" value="BPJEPS Activités de la Forme, CQP Coach Sportif"></div>
+            <div class="form-g"><label class="form-l">Description</label><textarea class="form-i" rows="4" style="resize:none">Ancien joueur de rugby de niveau régional, je me consacre entièrement à la préparation physique depuis 8 ans. Ma méthode repose sur trois piliers : force maximale, puissance explosive et résistance aux duels.</textarea></div>
+            <div class="form-row">
+              <div class="form-g"><label class="form-l">Tarif mensuel (€)</label><input class="form-i" type="number" value="120"></div>
+              <div class="form-g"><label class="form-l">Mode de coaching</label>
+                <select class="form-s"><option>Distanciel et présentiel</option><option>Distanciel uniquement</option><option>Présentiel uniquement</option></select>
+              </div>
+            </div>
+            <div class="form-g"><label class="form-l">Ville d'intervention</label><input class="form-i" type="text" value="Bordeaux (40km)"></div>
+            <div class="form-g"><label class="form-l">Photo de profil</label><input class="form-i" type="file" accept="image/*" style="padding:6px"></div>
+            <div class="form-g"><label class="form-l">Vidéo de présentation (URL YouTube)</label><input class="form-i" type="url" placeholder="https://youtube.com/watch?v=..."></div>
+            <div class="mz"><button class="btn-lime mag-btn" type="submit">Enregistrer</button></div>
+          </form>
+          <div>
+            <div class="lbl" style="margin-bottom:10px">Aperçu de ta card publique</div>
+            <div class="card-preview">
+              <div class="preview-img"><img src="https://images.unsplash.com/photo-1571731956672-f2b94d7dd0cb?w=560&q=75" alt="Karim"></div>
+              <div class="preview-body">
+                <div class="preview-name">Karim M.</div>
+                <div class="preview-title">Préparateur physique · Rugby</div>
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px">
+                  <div class="preview-price">120€ / mois</div>
+                  <span style="font-size:12px;color:var(--lime)">★★★★★ 4.9</span>
+                </div>
+                <div class="preview-badge"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>Diplôme vérifié</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── FINANCES ── -->
+      <div class="view" id="view-finances">
+        <div class="fin-header">
+          <div><div class="fin-total" id="finTotal">0€</div><div class="fin-total-lbl">CA juillet 2026</div></div>
+          <div style="text-align:right"><div style="font-family:var(--B);font-size:28px;font-weight:800;color:#4ade80">+18%</div><div class="lbl">vs mois dernier</div></div>
+        </div>
+        <div class="pend-card">
+          <div><div class="pend-amount">680€</div><div class="pend-lbl">En attente de libération (J+7)</div></div>
+          <div class="mz"><button class="btn-outline mag-btn">Voir le détail</button></div>
+        </div>
+        <div class="sec-title">CA DES 6 <b>DERNIERS MOIS</b></div>
+        <div class="chart-bars" id="barChart"></div>
+        <div class="sec-title">TRANSACTIONS <b>RÉCENTES</b></div>
+        <div class="card" style="padding:0;overflow:hidden">
+          <table class="tx-table">
+            <thead><tr><th>Élève</th><th>Programme</th><th>Montant</th><th>Date</th><th>Statut</th></tr></thead>
+            <tbody id="txBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- MOBILE NAV -->
+<nav class="mobile-nav">
+  <button class="mnav-item active" data-view="dashboard" onclick="SV('dashboard',this)"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg><span>Dashboard</span></button>
+  <button class="mnav-item" data-view="eleves" onclick="SV('eleves',this)"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg><span>Élèves</span></button>
+  <button class="mnav-item" data-view="messagerie" onclick="SV('messagerie',this)"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span>Messages</span></button>
+  <button class="mnav-item" data-view="finances" onclick="SV('finances',this)"><svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg><span>Finances</span></button>
+</nav>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<script>
+/* ─── CURSOR ─── */
+const isTouch=('ontouchstart'in window)||navigator.maxTouchPoints>0;
+if(isTouch)document.body.classList.add('touch');
+const cd=document.getElementById('cd'),cr=document.getElementById('cr');
+if(!isTouch){
+  const qx=gsap.quickTo(cr,'x',{duration:.14,ease:'none'}),qy=gsap.quickTo(cr,'y',{duration:.14,ease:'none'});
+  document.addEventListener('mousemove',e=>{gsap.set(cd,{x:e.clientX,y:e.clientY});qx(e.clientX);qy(e.clientY)});
+}
+function bH(){
+  if(isTouch)return;
+  document.querySelectorAll('a,button,input,select,textarea,.eleve-card,.prog-card-c,.cal-slot').forEach(el=>{
+    el.addEventListener('mouseenter',()=>{cd.classList.add('h');cr.classList.add('h')});
+    el.addEventListener('mouseleave',()=>{cd.classList.remove('h');cr.classList.remove('h')});
+  });
+}
+bH();
+
+function initMag(){
+  if(isTouch)return;
+  document.querySelectorAll('.mz').forEach(z=>{
+    if(z._m)return;z._m=true;
+    const b=z.querySelector('.mag-btn,.btn-lime,.btn-outline');if(!b)return;
+    z.addEventListener('mousemove',e=>{const r=z.getBoundingClientRect();gsap.to(b,{x:gsap.utils.mapRange(r.left,r.right,-r.width/2,r.width/2,e.clientX)*.3,y:gsap.utils.mapRange(r.top,r.bottom,-r.height/2,r.height/2,e.clientY)*.3,duration:.4,ease:'power2.out',overwrite:true})});
+    z.addEventListener('mouseleave',()=>gsap.to(b,{x:0,y:0,duration:.7,ease:'elastic.out(1,.4)',overwrite:true}));
+  });
+}
+initMag();
+
+/* ─── VIEW SWITCHING ─── */
+const TITLES={dashboard:'Tableau de bord',eleves:'Mes élèves',programmes:'Mes programmes',calendrier:'Calendrier',messagerie:'Messagerie',profil:'Mon profil',finances:'Finances'};
+function SV(name,el){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.getElementById('view-'+name).classList.add('active');
+  document.getElementById('topbarTitle').textContent=TITLES[name];
+  document.querySelectorAll('.nav-item[data-view]').forEach(i=>i.classList.toggle('active',i.dataset.view===name));
+  document.querySelectorAll('.mnav-item[data-view]').forEach(i=>i.classList.toggle('active',i.dataset.view===name));
+  if(name==='eleves')renderEleves();
+  if(name==='programmes')renderProgs();
+  if(name==='calendrier')renderCal();
+  if(name==='messagerie')initChat();
+  if(name==='finances'){animFinCounters();renderBars();}
+  setTimeout(()=>{initMag();bH();},50);
+}
+
+/* ─── TOAST ─── */
+let tT=null;
+function showToast(title,msg){
+  const t=document.getElementById('toast');
+  document.getElementById('toastTitle').textContent=title;
+  document.getElementById('toastMsg').textContent=msg;
+  t.classList.add('show');clearTimeout(tT);tT=setTimeout(()=>t.classList.remove('show'),3200);
+}
+
+/* ─── MODALS ─── */
+function openM(id){document.getElementById(id).classList.add('open');document.body.style.overflow='hidden'}
+function closeM(id){document.getElementById(id).classList.remove('open');document.body.style.overflow=''}
+document.querySelectorAll('.modal-bd').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)closeM(m.id)}));
+document.addEventListener('keydown',e=>{if(e.key==='Escape')document.querySelectorAll('.modal-bd.open').forEach(m=>closeM(m.id))});
+function replyAlert(){closeM('modalAlert');showToast('Réponse envoyée','Thomas a été notifié de ta réponse.')}
+function createProg(){closeM('modalProg');showToast('Programme créé','Ton nouveau programme est en ligne.')}
+function confirmSlot(){closeM('modalSlot');showToast('Créneau ouvert','Le créneau est maintenant visible par tes élèves.')}
+function saveDispo(){closeM('modalDispo');showToast('Disponibilités mises à jour','Tes horaires hebdomadaires ont été enregistrés.')}
+function saveProfil(e){e.preventDefault();showToast('Profil mis à jour','Tes modifications sont visibles sur ton profil public.')}
+
+/* ─── DATA ─── */
+const ELEVES_DATA=[
+  {name:'Thomas Roux',sport:'Rugby',obj:'Prépa intersaison',status:'actif',debut:'26 Mai 2026',last:'Il y a 2h',alert:true,av:'photo-1568602471122-7832951cc4c5'},
+  {name:'Sophie Martin',sport:'Running',obj:'Marathon',status:'actif',debut:'10 Mai 2026',last:'Il y a 3h',alert:false,av:'photo-1438761681033-6461ffad8d80'},
+  {name:'Lucas Petit',sport:'Musculation',obj:'Force',status:'essai',debut:'28 Juin 2026',last:'Hier',alert:false,av:'photo-1547425260-76bcadfb4f2c'},
+  {name:'Marie Dupont',sport:'Rugby',obj:'Performance',status:'pause',debut:'15 Avr 2026',last:'Il y a 5j',alert:false,av:'photo-1544005313-94ddf0286df2'},
+  {name:'Hugo Fontaine',sport:'Rugby',obj:'Semi-pro',status:'actif',debut:'01 Avr 2026',last:'Hier 18:32',alert:false,av:'photo-1500648767791-00dcc994a43e'},
+  {name:'Antoine Blanc',sport:'Rugby',obj:'Récupération blessure',status:'actif',debut:'15 Mar 2026',last:'Il y a 2j',alert:false,av:'photo-1506794778202-cad84cf45f1d'},
+];
+
+const ELEVES_RECENTS=[
+  {name:'Thomas Roux',sport:'Rugby · Ailier',status:'actif',last:'Douleur signalée il y a 2h',alert:true,av:'photo-1568602471122-7832951cc4c5'},
+  {name:'Sophie Martin',sport:'Running · Marathon',status:'actif',last:'Bilan envoyé il y a 3h',alert:false,av:'photo-1438761681033-6461ffad8d80'},
+  {name:'Lucas Petit',sport:'Musculation · Force',status:'essai',last:'Dernier message hier',alert:false,av:'photo-1547425260-76bcadfb4f2c'},
+  {name:'Marie Dupont',sport:'Rugby · Demi de mêlée',status:'pause',last:'Inactif depuis 5 jours',alert:false,av:'photo-1544005313-94ddf0286df2'},
+];
+
+const BILANS_RECUS=[
+  {name:'Thomas Roux',fat:6,mor:8,text:'Bonne semaine, un peu de fatigue en fin de semaine mais la récup a aidé.',av:'photo-1568602471122-7832951cc4c5'},
+  {name:'Sophie Martin',fat:3,mor:9,text:'Excellente semaine ! PB sur le 10km, super satisfaite du programme.',av:'photo-1438761681033-6461ffad8d80'},
+];
+
+const ACTIVITE=[
+  {type:'alert',icon:'<path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>',text:'Thomas Roux a signalé une douleur',time:'Il y a 2h'},
+  {type:'msg',icon:'<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>',text:'Nouveau message de Sophie Martin',time:'Il y a 3h'},
+  {type:'avis',icon:'<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>',text:'Avis 5★ reçu de Lucas Petit',time:'Hier 17:30'},
+  {type:'pay',icon:'<line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>',text:'Paiement reçu — Prépa intersaison rugby (49€)',time:'Hier 14:05'},
+  {type:'msg',icon:'<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>',text:'Bilan semaine 5 reçu de Thomas Roux',time:'Lun 9:12'},
+];
+
+const TX_DATA=[
+  {e:'Thomas Roux',p:'Coaching personnalisé',m:'120€',d:'01 Juil 2026',s:'paid'},
+  {e:'Sophie Martin',p:'Coaching personnalisé',m:'120€',d:'01 Juil 2026',s:'paid'},
+  {e:'Hugo Fontaine',p:'Prépa intersaison rugby',m:'49€',d:'29 Juin 2026',s:'paid'},
+  {e:'Lucas Petit',p:'Coaching — Essai',m:'0€',d:'27 Juin 2026',s:'pend'},
+  {e:'Marie Dupont',p:'Coaching personnalisé',m:'120€',d:'01 Juin 2026',s:'pend'},
+];
+
+const PROGS=[
+  {title:'Prépa intersaison rugby',sport:'Rugby',niveau:'Intermédiaire',prix:49,ventes:23,img:'photo-1571731956672-f2b94d7dd0cb'},
+  {title:'Force maximale prop',sport:'Rugby',niveau:'Avancé',prix:69,ventes:14,img:'photo-1583454110551-21f2fa2afe61'},
+  {title:'Vitesse & explosivité ailier',sport:'Rugby',niveau:'Tous niveaux',prix:39,ventes:31,img:'photo-1517838277966-e4e5c3d8c0bd'},
+];
+
+const CONVS=[
+  {id:0,name:'Thomas Roux',av:'photo-1568602471122-7832951cc4c5',unread:2,last:'Gêne au mollet…',msgs:[
+    {from:'other',text:"Salut Karim, est-ce qu'on fait quand même la séance force avec ma gêne au mollet ?",time:'Hier 16:20'},
+    {from:'me',text:'Oui on peut faire la séance mais on va adapter — on retire les exercices unilatéraux sur jambes et on se concentre sur le haut du corps.',time:'Hier 17:00'},
+    {from:'other',text:"J'ai eu une légère gêne au mollet en fin de séance hier. Intensité 4/10, pas de gonflement visible.",time:'Il y a 2h'},
+  ]},
+  {id:1,name:'Sophie Martin',av:'photo-1438761681033-6461ffad8d80',unread:0,last:'Bilan envoyé !',msgs:[
+    {from:'other',text:'Bilan semaine 8 envoyé ! Grosse semaine, PB sur le 10km',time:'Il y a 3h'},
+    {from:'me',text:'Excellent Sophie ! Le travail paie vraiment. On continue sur cette lancée.',time:'Il y a 2h'},
+  ]},
+];
+
+const BAR_DATA=[{m:'Fév',v:1580},{m:'Mar',v:1920},{m:'Avr',v:1740},{m:'Mai',v:2100},{m:'Juin',v:1980},{m:'Juil',v:2340}];
+const HOURS=['09:00','10:00','11:00','12:00','13:00','14:00','15:00','16:00','17:00'];
+const BOOKED={1:{2:'Thomas Roux'},3:{0:'Sophie Martin'},4:{4:'Hugo F.'}};
+const AVAIL={0:{1:true,5:true},2:{3:true,6:true},5:{1:true,2:true}};
+
+/* ─── DASHBOARD RENDER ─── */
+function renderDashboard(){
+  // Élèves récents
+  const er=document.getElementById('dashElevesRecents');
+  er.innerHTML=ELEVES_RECENTS.map(e=>`
+    <div class="eleve-row" onclick="openEleve('${e.name}')">
+      <div class="eleve-av-wrap">
+        <img class="eleve-av" src="https://images.unsplash.com/${e.av}?w=60&q=75" alt="${e.name}">
+        ${e.alert?'<div class="eleve-alert-dot"></div>':''}
+      </div>
+      <div class="eleve-info">
+        <div class="eleve-name">${e.name}</div>
+        <div class="eleve-meta">${e.sport} &middot; <span class="badge ${e.status}">${e.status==='actif'?'Actif':e.status==='essai'?'Essai gratuit':'En pause'}</span></div>
+      </div>
+      <div class="eleve-last">${e.last}</div>
+    </div>`).join('')
+    +'<button onclick="SV(\'eleves\',null)" style="margin-top:10px;font-family:var(--B);font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;color:rgba(198,255,52,.6);cursor:none;background:none;border:none;padding:0">Voir tous mes élèves &rarr;</button>';
+
+  // Bilans reçus
+  const br=document.getElementById('dashBilansRecus');
+  br.innerHTML=BILANS_RECUS.map(b=>`
+    <div class="bilan-recv-card">
+      <div class="bilan-recv-scores">
+        <div class="bscore fat"><div class="bscore-num">${b.fat}</div><div class="bscore-lbl">Fatigue</div></div>
+        <div class="bscore-sep"></div>
+        <div class="bscore mor"><div class="bscore-num">${b.mor}</div><div class="bscore-lbl">Moral</div></div>
+      </div>
+      <div class="bilan-recv-info">
+        <div class="bilan-recv-name">${b.name}</div>
+        <div class="bilan-recv-excerpt">${b.text}</div>
+      </div>
+      <div class="mz"><button class="btn-sm mag-btn" onclick="openEleve('${b.name}')">Consulter</button></div>
+    </div>`).join('');
+
+  // Activité
+  const da=document.getElementById('dashActivite');
+  da.innerHTML=ACTIVITE.map(t=>`
+    <div class="timeline-item">
+      <div class="tl-icon ${t.type}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${t.icon}</svg></div>
+      <div class="tl-text"><b>${t.text}</b></div>
+      <div class="tl-time">${t.time}</div>
+    </div>`).join('');
+
+  // Transactions table
+  const tb=document.getElementById('txBody');
+  if(tb) tb.innerHTML=TX_DATA.map(t=>`
+    <tr>
+      <td>${t.e}</td>
+      <td style="color:rgba(255,255,255,.45)">${t.p}</td>
+      <td style="font-family:var(--B);font-size:16px;font-weight:800;color:var(--lime)">${t.m}</td>
+      <td style="color:rgba(255,255,255,.3)">${t.d}</td>
+      <td><span class="tx-status ${t.s}">${t.s==='paid'?'Libéré':'En attente'}</span></td>
+    </tr>`).join('');
+
+  setTimeout(()=>{initMag();bH();},50);
+}
+
+/* ─── KPI COUNTERS ─── */
+function animKPIs(){
+  const kpis=[{id:'kpi0',v:12,s:''},{id:'kpi1',v:3,s:''},{id:'kpi2',v:2340,s:'€'},{id:'kpi3',v:67,s:'%'}];
+  kpis.forEach(k=>{
+    const el=document.getElementById(k.id);if(!el||el._done)return;el._done=true;
+    const obj={v:0};
+    gsap.to(obj,{v:k.v,duration:1.3,ease:'power2.out',delay:.1,onUpdate(){el.textContent=Math.round(obj.v)+k.s}});
+  });
+  const cf=document.getElementById('convFill');
+  if(cf&&!cf._done){cf._done=true;setTimeout(()=>cf.style.width='67%',300);}
+}
+function animFinCounters(){
+  const el=document.getElementById('finTotal');if(!el||el._done)return;el._done=true;
+  const obj={v:0};gsap.to(obj,{v:2340,duration:1.4,ease:'power2.out',delay:.1,onUpdate(){el.textContent=Math.round(obj.v)+'€'}});
+}
+
+/* ─── ÉLÈVES ─── */
+let eleveFilter='Tous',eleveSearch='';
+function renderEleves(){
+  const grid=document.getElementById('elevesGrid');if(!grid)return;
+  const list=ELEVES_DATA.filter(e=>{
+    const sf=eleveFilter==='Tous'||(eleveFilter==='Actifs'&&e.status==='actif')||(eleveFilter==='Essai'&&e.status==='essai')||(eleveFilter==='En pause'&&e.status==='pause');
+    const ss=!eleveSearch||e.name.toLowerCase().includes(eleveSearch.toLowerCase());
+    return sf&&ss;
+  });
+  grid.innerHTML=list.map(e=>`
+    <div class="eleve-card" onclick="openEleve('${e.name}')">
+      ${e.alert?'<div class="eleve-card-alert"></div>':''}
+      <div class="eleve-card-top">
+        <img class="eleve-card-av" src="https://images.unsplash.com/${e.av}?w=80&q=75" alt="${e.name}">
+        <div>
+          <div class="eleve-card-name">${e.name}</div>
+          <div class="eleve-card-meta">${e.sport} &middot; ${e.obj}</div>
+        </div>
+      </div>
+      <div style="margin-bottom:10px"><span class="badge ${e.status}">${e.status==='actif'?'Actif':e.status==='essai'?'Essai gratuit':'En pause'}</span></div>
+      <div class="eleve-card-stats">
+        <div class="eleve-stat"><div class="eleve-stat-v">Sem. 5</div><div class="eleve-stat-l">Semaine</div></div>
+        <div class="eleve-stat"><div class="eleve-stat-v" style="font-size:13px">${e.debut}</div><div class="eleve-stat-l">Début</div></div>
+        <div class="eleve-stat"><div class="eleve-stat-v" style="font-size:13px">${e.last}</div><div class="eleve-stat-l">Activité</div></div>
+      </div>
+    </div>`).join('');
+  setTimeout(()=>{initMag();bH();},50);
+}
+function filterTab(el){
+  eleveFilter=el.dataset.filter;
+  document.querySelectorAll('.ftab').forEach(b=>b.classList.toggle('active',b===el));
+  renderEleves();
+}
+function filterEleves(v){eleveSearch=v;renderEleves()}
+
+/* ─── ÉLÈVE DETAIL ─── */
+function openEleve(name){
+  const e=ELEVES_DATA.find(x=>x.name===name)||ELEVES_DATA[0];
+  const sessions=['Repos actif','Explosivité','Cardio','Repos','Force','—','Terrain'];
+  const days=['L','M','M','J','V','S','D'];
+  document.getElementById('eleveDrawer').innerHTML=`
+    <button class="detail-close" onclick="closePanel()">✕</button>
+    <div class="detail-header">
+      <img class="detail-av" src="https://images.unsplash.com/${e.av}?w=100&q=75" alt="${e.name}">
+      <div>
+        <div class="detail-name">${e.name}</div>
+        <div class="detail-sub">${e.sport} &middot; ${e.obj} &middot; <span class="badge ${e.status}" style="vertical-align:middle">${e.status==='actif'?'Actif':e.status==='essai'?'Essai':'Pause'}</span></div>
+      </div>
+    </div>
+    <div class="detail-tabs">
+      <button class="dtab active" onclick="DT('plan',this)">Planning</button>
+      <button class="dtab" onclick="DT('bilans',this)">Bilans</button>
+      <button class="dtab" onclick="DT('infos',this)">Infos</button>
+    </div>
+    <div class="dtab-content active" id="dt-plan">
+      <div class="lbl" style="margin-bottom:8px">Semaine en cours</div>
+      <div class="plan-week-mini">
+        ${days.map((d,i)=>{
+          const has=sessions[i]!=='—'&&sessions[i]!=='Repos'&&sessions[i]!=='Repos actif';
+          return '<div class="plan-day-mini'+(has?' has-session':'')+'"><div class="pday-name">'+d+'</div><div class="pday-sess">'+sessions[i]+'</div></div>';
+        }).join('')}
+      </div>
+      <div class="mz" style="margin-top:12px"><button class="btn-sm mag-btn">Modifier le planning</button></div>
+    </div>
+    <div class="dtab-content" id="dt-bilans">
+      ${[{w:'Sem 5',f:6,m:8},{w:'Sem 4',f:4,m:9},{w:'Sem 3',f:7,m:6}].map(b=>
+        '<div style="display:flex;align-items:center;gap:14px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.05)">'
+        +'<div style="min-width:60px;font-family:var(--B);font-size:15px;font-weight:800;color:rgba(255,255,255,.4)">'+b.w+'</div>'
+        +'<div style="display:flex;gap:10px">'
+        +'<div style="text-align:center"><div style="font-family:var(--B);font-size:20px;font-weight:800;color:var(--red)">'+b.f+'</div><div style="font-size:9px;color:rgba(255,255,255,.25);text-transform:uppercase">Fatigue</div></div>'
+        +'<div style="text-align:center"><div style="font-family:var(--B);font-size:20px;font-weight:800;color:var(--lime)">'+b.m+'</div><div style="font-size:9px;color:rgba(255,255,255,.25);text-transform:uppercase">Moral</div></div>'
+        +'</div>'
+        +'<div class="mz"><button class="btn-sm mag-btn">Voir</button></div>'
+        +'</div>'
+      ).join('')}
+    </div>
+    <div class="dtab-content" id="dt-infos">
+      <div style="display:flex;flex-direction:column;gap:10px;font-size:13px">
+        <div><span class="lbl">Sport</span><div>${e.sport}</div></div>
+        <div><span class="lbl">Objectif</span><div>${e.obj}</div></div>
+        <div><span class="lbl">Début du coaching</span><div>${e.debut}</div></div>
+        <div><span class="lbl">Dernière activité</span><div>${e.last}</div></div>
+      </div>
+    </div>
+    <div class="detail-action-row">
+      <div class="mz"><button class="btn-lime mag-btn" onclick="closePanel();SV('messagerie',null)">Envoyer un message</button></div>
+      <div class="mz"><button class="btn-sm mag-btn danger" onclick="closePanel();showToast('Suivi mis en pause','${e.name} a été notifié.')">Mettre en pause</button></div>
+      <div class="mz"><button class="btn-sm mag-btn danger" onclick="closePanel();showToast('Suivi terminé','Le suivi de ${e.name} a été arrêté.')">Arrêter le suivi</button></div>
+    </div>`;
+  document.getElementById('elevePanel').classList.add('open');
+  setTimeout(()=>{initMag();bH();},50);
+}
+function DT(tab,el){
+  document.querySelectorAll('.dtab').forEach(t=>t.classList.toggle('active',t===el));
+  document.querySelectorAll('.dtab-content').forEach(c=>c.classList.toggle('active',c.id==='dt-'+tab));
+}
+function closePanel(){document.getElementById('elevePanel').classList.remove('open')}
+
+/* ─── PROGRAMMES ─── */
+function renderProgs(){
+  const g=document.getElementById('progGrid');if(!g||g._done)return;g._done=true;
+  g.innerHTML=PROGS.map(p=>`
+    <div class="prog-card-c">
+      <div class="prog-img-c"><img src="https://images.unsplash.com/${p.img}?w=480&q=75" alt="${p.title}" loading="lazy"></div>
+      <div class="prog-body-c">
+        <div class="prog-title-c">${p.title}</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px">
+          <span class="badge actif">${p.sport}</span>
+          <span style="font-size:11px;color:rgba(255,255,255,.3);border:1px solid rgba(255,255,255,.08);padding:2px 8px">${p.niveau}</span>
+        </div>
+        <div class="prog-meta-row">
+          <div class="prog-price-c">${p.prix}€</div>
+          <div class="prog-sales">${p.ventes} ventes</div>
+        </div>
+        <div class="prog-actions">
+          <div class="mz"><button class="btn-sm mag-btn">Modifier</button></div>
+          <div class="mz"><button class="btn-sm mag-btn danger" onclick="showToast('Programme supprimé','${p.title} a été supprimé.')">Supprimer</button></div>
+        </div>
+      </div>
+    </div>`).join('');
+  setTimeout(()=>{initMag();bH();},50);
+}
+function PT(tab,el){
+  document.querySelectorAll('.ptab').forEach(t=>t.classList.toggle('active',t===el));
+  document.querySelectorAll('.ptab-content').forEach(c=>c.classList.toggle('active',c.id==='pt-'+tab));
+}
+function addQ(){
+  const i=document.getElementById('newQInput');if(!i.value.trim())return;
+  const li=document.createElement('div');li.className='q-item';
+  li.innerHTML=i.value+'<button class="q-del" onclick="delQ(this)">×</button>';
+  document.getElementById('qList').appendChild(li);i.value='';
+  showToast('Question ajoutée','Le formulaire de qualification a été mis à jour.');
+}
+function delQ(btn){btn.closest('.q-item').remove()}
+
+/* ─── CALENDRIER ─── */
+function renderCal(){
+  const wrap=document.getElementById('calCoach');if(!wrap)return;
+  const DAYS=['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'];
+  const today=new Date();const dow=today.getDay()===0?6:today.getDay()-1;
+  let html='<div class="cal-week-header"><div></div>'
+    +DAYS.map((d,i)=>'<div class="cday'+(i===dow?' today-col':'')+'">'
+      +d+' <span style="font-family:var(--B);font-size:16px;font-weight:800">'
+      +new Date(today.getTime()+(i-dow)*86400000).getDate()
+      +'</span></div>').join('')
+    +'</div>';
+  html+='<div class="cal-grid-coach"><div class="cal-time-col">'
+    +HOURS.map(h=>'<div class="cal-time-slot">'+h+'</div>').join('')
+    +'</div>';
+  for(let d=0;d<7;d++){
+    html+='<div class="cal-day-col">';
+    for(let h=0;h<HOURS.length;h++){
+      const booked=BOOKED[d]&&BOOKED[d][h];
+      const avail=AVAIL[d]&&AVAIL[d][h];
+      if(booked) html+='<div class="cal-slot booked" title="'+booked+'">'+booked.split(' ')[0]+'</div>';
+      else if(avail) html+='<div class="cal-slot available" onclick="openSlot(\''+DAYS[d]+'\','+h+')">Dispo</div>';
+      else html+='<div class="cal-slot" onclick="openSlot(\''+DAYS[d]+'\','+h+'\')">+</div>';
+    }
+    html+='</div>';
+  }
+  html+='</div>';
+  wrap.innerHTML=html;
+  setTimeout(()=>bH(),30);
+}
+function openSlot(day,hIdx){
+  document.getElementById('slotInfo').textContent=day+' à '+HOURS[hIdx];
+  openM('modalSlot');
+}
+
+/* ─── CHAT ─── */
+let activeChatId=0;
+function initChat(){
+  const list=document.getElementById('chatList');
+  if(!list||list._init)return;list._init=true;
+  list.innerHTML=CONVS.map(c=>
+    '<div class="chat-conv'+(c.id===0?' active':'')+'" onclick="selectConv('+c.id+')">'
+    +'<img class="chat-conv-av" src="https://images.unsplash.com/'+c.av+'?w=60&q=75" alt="'+c.name+'">'
+    +'<div class="chat-conv-info"><div class="chat-conv-name">'+c.name+'</div><div class="chat-conv-last">'+c.last+'</div></div>'
+    +(c.unread?'<div class="chat-unread">'+c.unread+'</div>':'')
+    +'</div>').join('');
+  renderConv(0);
+  setTimeout(()=>bH(),30);
+}
+function selectConv(id){
+  activeChatId=id;
+  document.querySelectorAll('.chat-conv').forEach((c,i)=>c.classList.toggle('active',i===id));
+  const u=document.querySelectorAll('.chat-conv')[id]?.querySelector('.chat-unread');
+  if(u)u.remove();
+  renderConv(id);
+}
+function renderConv(id){
+  const c=CONVS[id];
+  document.getElementById('chatHdr').innerHTML=
+    '<img class="chat-hdr-av" src="https://images.unsplash.com/'+c.av+'?w=60&q=75" alt="'+c.name+'">'
+    +'<div><div class="chat-hdr-name">'+c.name+'</div><div class="chat-hdr-status">Vu récemment</div></div>';
+  const msgs=document.getElementById('chatMsgs');
+  msgs.innerHTML=c.msgs.map(m=>
+    '<div class="bubble-row'+(m.from==='me'?' me':'')+'"">'
+    +(m.from==='other'?'<img class="bav" src="https://images.unsplash.com/'+c.av+'?w=60&q=75" alt="'+c.name+'">':'')
+    +'<div><div class="bubble '+(m.from==='me'?'me':'other')+'">'+m.text+'</div><span class="btime">'+m.time+'</span></div>'
+    +(m.from==='me'?'<img class="bav" src="https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=60&q=75" alt="Karim">':'')
+    +'</div>').join('');
+  msgs.scrollTop=msgs.scrollHeight;
+}
+function sendMsg(){
+  const input=document.getElementById('chatInput');const txt=input.value.trim();if(!txt)return;
+  const now=new Date();const time=now.getHours()+'h'+String(now.getMinutes()).padStart(2,'0');
+  CONVS[activeChatId].msgs.push({from:'me',text:txt,time});input.value='';
+  renderConv(activeChatId);
+}
+
+/* ─── FINANCES BARS ─── */
+function renderBars(){
+  const el=document.getElementById('barChart');if(!el||el._done)return;el._done=true;
+  const max=Math.max(...BAR_DATA.map(d=>d.v));
+  el.innerHTML=BAR_DATA.map(d=>
+    '<div class="chart-bar-wrap">'
+    +'<div class="chart-bar" data-val="'+d.v+'€" style="height:'+(d.v/max*100)+'%;background:'+(d.m==='Juil'?'var(--lime)':'rgba(198,255,52,.3)')+'"></div>'
+    +'<div class="chart-bar-lbl">'+d.m+'</div>'
+    +'</div>').join('');
+  gsap.from(el.querySelectorAll('.chart-bar'),{height:0,duration:.8,ease:'power2.out',stagger:.08,delay:.1});
+}
+
+/* ─── INIT ─── */
+renderDashboard();
+animKPIs();
+gsap.from('.topbar',{opacity:0,y:-14,duration:.4,ease:'power2.out'});
+gsap.from('.sidebar',{opacity:0,x:-18,duration:.45,ease:'power2.out'});
+gsap.from('#view-dashboard > *',{opacity:0,y:20,duration:.45,ease:'power3.out',stagger:.06,delay:.1});
+</script>
+</body>
+</html>

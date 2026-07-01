@@ -1,0 +1,1189 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SKARP — Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--lime:#C6FF34;--carbon:#171717;--c2:#262626;--c3:#303030;--white:#fff;--red:#FF4D4D;--B:'Barlow Condensed',sans-serif;--S:'DM Sans',sans-serif;--sb:240px}
+html,body{height:100%;overflow:hidden}
+body{background:var(--carbon);color:var(--white);font-family:var(--S);font-size:15px;cursor:none}
+body.touch{cursor:auto}
+a{color:inherit;text-decoration:none}
+button{cursor:none;border:none;background:none;font-family:var(--S);color:inherit}
+body.touch button{cursor:pointer}
+input,textarea,select{font-family:var(--S);color:var(--white)}
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:2px}
+
+/* ─── CURSOR ──────────────────── */
+#cd{position:fixed;width:8px;height:8px;background:var(--lime);border-radius:50%;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);transition:width .12s,height .12s}
+#cr{position:fixed;width:32px;height:32px;border:1.5px solid rgba(255,255,255,.4);border-radius:50%;pointer-events:none;z-index:9998;transform:translate(-50%,-50%);transition:border-color .2s,width .2s,height .2s}
+#cd.h{width:12px;height:12px}#cr.h{width:42px;height:42px;border-color:var(--lime)}
+
+/* ─── LAYOUT ──────────────────── */
+.app{display:flex;height:100vh;overflow:hidden}
+
+/* ─── SIDEBAR ─────────────────── */
+.sidebar{
+  width:var(--sb);flex-shrink:0;
+  background:#111;border-right:1px solid rgba(255,255,255,.05);
+  display:flex;flex-direction:column;
+  position:relative;z-index:50;
+  overflow-y:auto;
+}
+.sb-logo{padding:24px 20px 20px;border-bottom:1px solid rgba(255,255,255,.05)}
+.sb-logo a{font-family:var(--B);font-size:26px;font-weight:800;letter-spacing:.02em}
+.sb-logo a b{color:var(--lime)}
+.sb-user{display:flex;align-items:center;gap:12px;padding:18px 20px;border-bottom:1px solid rgba(255,255,255,.05)}
+.sb-avatar{width:38px;height:38px;border-radius:50%;object-fit:cover;border:2px solid rgba(198,255,52,.3);flex-shrink:0}
+.sb-user-info{min-width:0}
+.sb-name{font-weight:500;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sb-role{font-size:11px;color:rgba(255,255,255,.3);letter-spacing:.04em;text-transform:uppercase}
+.sb-nav{flex:1;padding:10px 0}
+.nav-item{
+  display:flex;align-items:center;gap:12px;
+  padding:11px 20px;font-size:14px;font-weight:500;
+  cursor:none;transition:background .18s,color .18s;
+  position:relative;border-left:2px solid transparent;
+}
+body.touch .nav-item{cursor:pointer}
+.nav-item svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0;transition:stroke .18s}
+.nav-item:hover{background:rgba(255,255,255,.04);color:var(--lime)}
+.nav-item.active{background:var(--lime);color:var(--carbon);border-left-color:transparent}
+.nav-item.active svg{stroke:var(--carbon)}
+.nav-badge{margin-left:auto;background:var(--red);color:#fff;font-size:10px;font-weight:700;border-radius:10px;padding:1px 6px;min-width:18px;text-align:center}
+.nav-item.active .nav-badge{background:var(--carbon);color:var(--lime)}
+.sb-bottom{padding:16px 20px;border-top:1px solid rgba(255,255,255,.05)}
+.btn-logout{display:flex;align-items:center;gap:10px;font-size:13px;color:rgba(255,255,255,.3);cursor:none;transition:color .2s;padding:8px 0;background:none;border:none;width:100%}
+body.touch .btn-logout{cursor:pointer}
+.btn-logout:hover{color:var(--red)}
+.btn-logout svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+
+/* ─── MAIN ────────────────────── */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
+
+/* ─── TOPBAR ──────────────────── */
+.topbar{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 32px;height:62px;
+  border-bottom:1px solid rgba(255,255,255,.05);
+  flex-shrink:0;background:#111;
+}
+.topbar-title{font-family:var(--B);font-size:22px;font-weight:800;text-transform:uppercase;letter-spacing:.02em}
+.topbar-r{display:flex;align-items:center;gap:18px}
+.notif-btn{position:relative;display:flex;align-items:center;justify-content:center;cursor:none;width:36px;height:36px;transition:color .2s}
+body.touch .notif-btn{cursor:pointer}
+.notif-btn:hover{color:var(--lime)}
+.notif-btn svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.notif-dot{position:absolute;top:6px;right:6px;width:8px;height:8px;background:var(--red);border-radius:50%;border:2px solid #111}
+.top-avatar-wrap{position:relative}
+.top-avatar{width:34px;height:34px;border-radius:50%;object-fit:cover;cursor:none;border:2px solid rgba(255,255,255,.1);transition:border-color .2s}
+body.touch .top-avatar{cursor:pointer}
+.top-avatar:hover{border-color:var(--lime)}
+.top-dropdown{
+  position:absolute;top:calc(100%+10px);right:0;
+  background:var(--c2);border:1px solid rgba(255,255,255,.08);
+  min-width:180px;z-index:100;
+  opacity:0;pointer-events:none;transform:translateY(-8px);transition:opacity .2s,transform .2s;
+}
+.top-dropdown.show{opacity:1;pointer-events:all;transform:translateY(0)}
+.dd-item{display:flex;align-items:center;gap:10px;padding:11px 16px;font-size:13px;cursor:none;transition:background .15s;border-bottom:1px solid rgba(255,255,255,.04)}
+body.touch .dd-item{cursor:pointer}
+.dd-item:hover{background:rgba(255,255,255,.04);color:var(--lime)}
+.dd-item:last-child{border-bottom:none}
+.dd-item svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+
+/* ─── CONTENT SCROLL ──────────── */
+.content{flex:1;overflow-y:auto;padding:28px 32px 48px}
+.view{display:none;animation:fadeIn .32s ease}
+.view.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+
+/* ─── COMMON ──────────────────── */
+.section-title{font-family:var(--B);font-size:clamp(22px,2.5vw,32px);font-weight:800;text-transform:uppercase;letter-spacing:.01em;margin-bottom:16px}
+.section-title b{color:var(--lime)}
+.card{background:var(--c2);border:1px solid rgba(255,255,255,.06);padding:20px 22px}
+.card-sm{background:var(--c2);border:1px solid rgba(255,255,255,.06);padding:16px 18px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.mz{position:relative;display:inline-block}
+.btn-lime{font-family:var(--B);font-size:16px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;background:var(--lime);color:var(--carbon);padding:11px 28px;cursor:none;transition:background .2s;border:none;display:inline-block}
+body.touch .btn-lime{cursor:pointer}
+.btn-lime:hover{background:#d4ff5a}
+.btn-outline{font-family:var(--B);font-size:15px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;border:1.5px solid rgba(255,255,255,.18);color:rgba(255,255,255,.7);padding:10px 24px;cursor:none;transition:border-color .2s,color .2s;background:transparent;display:inline-block}
+body.touch .btn-outline{cursor:pointer}
+.btn-outline:hover{border-color:var(--lime);color:var(--lime)}
+.tag{font-size:11px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;border:1px solid rgba(255,255,255,.12);color:rgba(255,255,255,.4);padding:3px 9px;display:inline-block}
+.tag.lime{border-color:rgba(198,255,52,.35);color:rgba(198,255,52,.8)}
+
+/* ─── DASHBOARD VIEW ──────────── */
+.welcome-band{margin-bottom:24px}
+.welcome-title{font-family:var(--B);font-size:clamp(32px,4vw,56px);font-weight:800;text-transform:uppercase;line-height:.95;letter-spacing:-.01em}
+.welcome-title b{color:var(--lime)}
+.welcome-sub{font-size:14px;color:rgba(255,255,255,.4);margin-top:8px}
+
+.dash-grid{display:grid;grid-template-columns:1fr 340px;gap:20px;align-items:start}
+.dash-main{display:flex;flex-direction:column;gap:20px}
+.dash-side{display:flex;flex-direction:column;gap:16px}
+
+/* coach card */
+.coach-card-d{display:flex;align-items:center;gap:16px;padding:18px 20px;background:var(--c2);border:1px solid rgba(255,255,255,.06)}
+.coach-photo-d{width:52px;height:52px;border-radius:50%;object-fit:cover;border:2px solid rgba(198,255,52,.3);flex-shrink:0}
+.coach-info-d{flex:1;min-width:0}
+.coach-name-d{font-family:var(--B);font-size:20px;font-weight:800;text-transform:uppercase}
+.coach-title-d{font-size:12px;color:rgba(255,255,255,.35);margin-top:2px}
+.coach-badge-d{font-size:11px;color:rgba(198,255,52,.6);letter-spacing:.04em;text-transform:uppercase;margin-top:6px;display:flex;align-items:center;gap:6px}
+.coach-badge-d::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--lime);display:inline-block}
+
+/* alert douleur */
+.btn-alert{
+  display:flex;align-items:center;justify-content:center;gap:10px;width:100%;
+  border:1.5px solid rgba(255,77,77,.3);color:rgba(255,120,120,.7);
+  padding:13px 20px;font-size:14px;font-weight:500;
+  cursor:none;transition:border-color .2s,color .2s,background .2s;background:rgba(255,77,77,.04);
+}
+body.touch .btn-alert{cursor:pointer}
+.btn-alert:hover{border-color:var(--red);color:var(--red);background:rgba(255,77,77,.08)}
+.btn-alert svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+
+/* week planning */
+.week-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:8px}
+.day-card{
+  background:var(--c2);border:1.5px solid rgba(255,255,255,.06);
+  padding:12px 10px;display:flex;flex-direction:column;align-items:center;gap:8px;
+  cursor:none;transition:border-color .2s,background .2s;min-height:110px;
+}
+body.touch .day-card{cursor:pointer}
+.day-card:hover{border-color:rgba(198,255,52,.3)}
+.day-card.today{border-color:var(--lime)}
+.day-card.past{opacity:.65}
+.day-label{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.3);font-weight:500}
+.day-num{font-family:var(--B);font-size:22px;font-weight:800;line-height:1}
+.day-card.today .day-num{color:var(--lime)}
+.day-session{font-size:11px;color:rgba(255,255,255,.5);text-align:center;line-height:1.4;flex:1;display:flex;align-items:center}
+.day-check{width:20px;height:20px;border-radius:50%;border:1.5px solid rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;margin-top:auto}
+.day-check.done{background:rgba(198,255,52,.15);border-color:var(--lime)}
+.day-check.done svg{width:10px;height:10px;stroke:var(--lime);stroke-width:2.5}
+.day-type-dot{width:6px;height:6px;border-radius:50%}
+.dt-force{background:#818cf8}
+.dt-cardio{background:#34d399}
+.dt-repos{background:rgba(255,255,255,.2)}
+.dt-match{background:#fb923c}
+
+/* bilan */
+.bilan-card{background:var(--c2);border:1px solid rgba(255,255,255,.06);padding:18px 20px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.bilan-status{display:flex;align-items:center;gap:10px}
+.bilan-dot{width:10px;height:10px;border-radius:50%;background:rgba(255,77,77,.7);flex-shrink:0}
+.bilan-dot.done{background:var(--lime)}
+.bilan-label{font-size:14px}
+
+/* stats */
+.stat-card{background:var(--c2);border:1px solid rgba(255,255,255,.06);padding:18px 20px}
+.stat-val-d{font-family:var(--B);font-size:36px;font-weight:800;color:var(--lime);line-height:1;margin-bottom:4px}
+.stat-lbl-d{font-size:12px;color:rgba(255,255,255,.35);letter-spacing:.04em;text-transform:uppercase}
+
+/* messages */
+.msg-preview{display:flex;align-items:flex-start;gap:12px;padding:13px 0;border-bottom:1px solid rgba(255,255,255,.04)}
+.msg-preview:last-child{border-bottom:none}
+.msg-av{width:34px;height:34px;border-radius:50%;object-fit:cover;flex-shrink:0}
+.msg-body{flex:1;min-width:0}
+.msg-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:3px}
+.msg-name{font-size:13px;font-weight:500}
+.msg-time{font-size:11px;color:rgba(255,255,255,.25)}
+.msg-text{font-size:13px;color:rgba(255,255,255,.4);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.link-more{font-size:13px;color:rgba(198,255,52,.7);letter-spacing:.04em;text-transform:uppercase;font-family:var(--B);font-weight:800;cursor:none;background:none;border:none;transition:color .2s;margin-top:10px;display:inline-block}
+body.touch .link-more{cursor:pointer}
+.link-more:hover{color:var(--lime)}
+
+/* ─── PLANNING VIEW ───────────── */
+.cal-toggle{display:flex;gap:0;margin-bottom:20px;border:1.5px solid rgba(255,255,255,.1);width:fit-content}
+.cal-tab{font-family:var(--B);font-size:14px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;padding:8px 22px;cursor:none;color:rgba(255,255,255,.4);transition:background .2s,color .2s;background:transparent;border:none}
+body.touch .cal-tab{cursor:pointer}
+.cal-tab.active{background:var(--lime);color:var(--carbon)}
+.cal-nav{display:flex;align-items:center;gap:16px;margin-bottom:20px}
+.cal-nav button{display:flex;align-items:center;justify-content:center;width:32px;height:32px;border:1.5px solid rgba(255,255,255,.12);cursor:none;transition:border-color .2s;background:transparent;color:rgba(255,255,255,.5)}
+body.touch .cal-nav button{cursor:pointer}
+.cal-nav button:hover{border-color:var(--lime);color:var(--lime)}
+.cal-nav button svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.cal-month-title{font-family:var(--B);font-size:20px;font-weight:800;text-transform:uppercase;flex:1}
+.cal-legend{display:flex;gap:16px;margin-bottom:16px;flex-wrap:wrap}
+.leg-item{display:flex;align-items:center;gap:6px;font-size:12px;color:rgba(255,255,255,.35)}
+.leg-dot{width:8px;height:8px;border-radius:50%}
+.leg-planned{background:var(--lime)}
+.leg-done{background:#22c55e}
+.leg-missed{background:rgba(255,77,77,.5)}
+.leg-rest{background:rgba(255,255,255,.15)}
+.month-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+.month-day-head{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.25);text-align:center;padding:6px 0;font-weight:500}
+.month-day{
+  aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:3px;font-size:13px;font-weight:500;position:relative;
+  cursor:none;transition:background .15s;
+}
+body.touch .month-day{cursor:default}
+.month-day.other{color:rgba(255,255,255,.15)}
+.month-day.today-d{background:rgba(198,255,52,.1);border:1px solid var(--lime);color:var(--lime)}
+.month-day .dot{width:5px;height:5px;border-radius:50%}
+
+/* ─── BILANS VIEW ─────────────── */
+.bilan-hist-card{
+  background:var(--c2);border:1px solid rgba(255,255,255,.06);
+  padding:20px;margin-bottom:12px;display:flex;gap:24px;align-items:center;flex-wrap:wrap;
+}
+.bilan-week{font-family:var(--B);font-size:18px;font-weight:800;text-transform:uppercase;min-width:130px}
+.bilan-scores{display:flex;gap:20px}
+.bilan-score-item{display:flex;flex-direction:column;align-items:center;gap:4px}
+.score-bar-wrap{width:50px;height:50px;position:relative}
+.score-bar-wrap svg{width:50px;height:50px;transform:rotate(-90deg)}
+.score-label{font-size:11px;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:.04em}
+.score-num{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:var(--B);font-size:16px;font-weight:800;transform:rotate(90deg)}
+.bilan-excerpt{flex:1;font-size:13px;color:rgba(255,255,255,.4);line-height:1.7;min-width:150px}
+
+/* ─── MESSAGERIE VIEW ─────────── */
+.chat-layout{display:grid;grid-template-columns:240px 1fr;height:calc(100vh - 62px - 80px);gap:0;border:1px solid rgba(255,255,255,.06)}
+.chat-list{border-right:1px solid rgba(255,255,255,.06);overflow-y:auto}
+.chat-conv{padding:14px 16px;display:flex;align-items:center;gap:12px;cursor:none;transition:background .15s;border-bottom:1px solid rgba(255,255,255,.04)}
+body.touch .chat-conv{cursor:pointer}
+.chat-conv.active,.chat-conv:hover{background:rgba(198,255,52,.06)}
+.chat-conv-av{width:38px;height:38px;border-radius:50%;object-fit:cover;flex-shrink:0}
+.chat-conv-info{min-width:0;flex:1}
+.chat-conv-name{font-size:13px;font-weight:500;margin-bottom:2px}
+.chat-conv-last{font-size:12px;color:rgba(255,255,255,.3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chat-window{display:flex;flex-direction:column;background:rgba(255,255,255,.01)}
+.chat-header{padding:14px 20px;border-bottom:1px solid rgba(255,255,255,.05);display:flex;align-items:center;gap:12px;flex-shrink:0}
+.chat-header-av{width:34px;height:34px;border-radius:50%;object-fit:cover;border:2px solid rgba(198,255,52,.25)}
+.chat-header-name{font-weight:500;font-size:14px}
+.chat-header-status{font-size:11px;color:rgba(198,255,52,.5);display:flex;align-items:center;gap:5px}
+.chat-header-status::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--lime)}
+.chat-messages{flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:14px}
+.bubble-row{display:flex;align-items:flex-end;gap:8px}
+.bubble-row.me{flex-direction:row-reverse}
+.bubble-av{width:28px;height:28px;border-radius:50%;object-fit:cover;flex-shrink:0}
+.bubble{
+  max-width:70%;padding:11px 14px;font-size:13px;line-height:1.65;
+}
+.bubble.coach{background:var(--c2);border:1px solid rgba(255,255,255,.06)}
+.bubble.me{background:var(--lime);color:var(--carbon)}
+.bubble-time{font-size:10px;color:rgba(255,255,255,.2);margin-top:4px;display:block}
+.bubble.me .bubble-time{text-align:right;color:rgba(23,23,23,.4)}
+.chat-input-area{padding:14px 16px;border-top:1px solid rgba(255,255,255,.06);display:flex;gap:10px;flex-shrink:0}
+.chat-input{
+  flex:1;background:var(--c2);border:1px solid rgba(255,255,255,.08);
+  color:var(--white);padding:10px 14px;font-size:14px;outline:none;
+  transition:border-color .2s;resize:none;height:42px;
+}
+.chat-input::placeholder{color:rgba(255,255,255,.2)}
+.chat-input:focus{border-color:rgba(198,255,52,.3)}
+.btn-send{background:var(--lime);color:var(--carbon);border:none;padding:0 18px;cursor:none;transition:background .2s;display:flex;align-items:center;justify-content:center}
+body.touch .btn-send{cursor:pointer}
+.btn-send:hover{background:#d4ff5a}
+.btn-send svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+
+/* ─── RESERVATIONS VIEW ───────── */
+.resa-card{background:var(--c2);border:1px solid rgba(255,255,255,.06);padding:18px 20px;display:flex;align-items:center;gap:20px;margin-bottom:12px;flex-wrap:wrap}
+.resa-date-block{background:var(--c3);padding:10px 16px;text-align:center;flex-shrink:0;min-width:68px}
+.resa-day-num{font-family:var(--B);font-size:28px;font-weight:800;color:var(--lime);line-height:1}
+.resa-month{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.3);font-weight:500}
+.resa-info{flex:1;min-width:0}
+.resa-title{font-weight:500;font-size:15px;margin-bottom:4px}
+.resa-meta{font-size:12px;color:rgba(255,255,255,.35);display:flex;gap:14px;flex-wrap:wrap}
+.resa-meta span{display:flex;align-items:center;gap:5px}
+.resa-meta svg{width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.resa-actions{flex-shrink:0}
+.btn-cancel{font-size:12px;color:rgba(255,77,77,.5);border:1px solid rgba(255,77,77,.2);padding:7px 14px;cursor:none;transition:all .2s;background:transparent}
+body.touch .btn-cancel{cursor:pointer}
+.btn-cancel:hover{color:var(--red);border-color:var(--red)}
+
+/* ─── PROGRAMMES VIEW ─────────── */
+.prog-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px}
+.prog-card-d{background:var(--c2);border:1px solid rgba(255,255,255,.06);overflow:hidden;transition:border-color .25s}
+.prog-card-d:hover{border-color:rgba(198,255,52,.3)}
+.prog-img{aspect-ratio:16/9;overflow:hidden}
+.prog-img img{width:100%;height:100%;object-fit:cover;transition:transform .4s}
+.prog-card-d:hover .prog-img img{transform:scale(1.05)}
+.prog-body{padding:16px}
+.prog-title-d{font-family:var(--B);font-size:18px;font-weight:800;text-transform:uppercase;margin-bottom:6px}
+.prog-meta-d{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.prog-status{display:flex;align-items:center;justify-content:space-between;padding-top:12px;border-top:1px solid rgba(255,255,255,.06)}
+.status-badge{font-size:11px;font-weight:500;letter-spacing:.04em;text-transform:uppercase;padding:3px 10px;border-radius:12px}
+.status-badge.ongoing{background:rgba(198,255,52,.12);color:var(--lime);border:1px solid rgba(198,255,52,.25)}
+.status-badge.done{background:rgba(34,197,94,.1);color:#4ade80;border:1px solid rgba(34,197,94,.2)}
+.prog-pct{font-family:var(--B);font-size:14px;font-weight:800;color:rgba(255,255,255,.3)}
+
+/* ─── PROFIL VIEW ─────────────── */
+.profil-form{display:flex;flex-direction:column;gap:20px;max-width:640px}
+.form-group{display:flex;flex-direction:column;gap:8px}
+.form-label{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.3);font-weight:500}
+.form-input{background:var(--c2);border:1.5px solid rgba(255,255,255,.08);color:var(--white);padding:11px 14px;font-size:14px;outline:none;transition:border-color .2s;width:100%}
+.form-input:focus{border-color:rgba(198,255,52,.4)}
+.form-select{background:var(--c2);border:1.5px solid rgba(255,255,255,.08);color:var(--white);padding:11px 14px;font-size:14px;outline:none;transition:border-color .2s;width:100%;-webkit-appearance:none;appearance:none;cursor:none}
+body.touch .form-select{cursor:pointer}
+.form-select:focus{border-color:rgba(198,255,52,.4)}
+.form-grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.form-range-wrap{display:flex;flex-direction:column;gap:8px}
+.form-range-val{font-family:var(--B);font-size:28px;font-weight:800;color:var(--lime)}
+.form-range{width:100%;-webkit-appearance:none;height:4px;background:rgba(255,255,255,.1);outline:none}
+.form-range::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:var(--lime);border:3px solid var(--carbon);cursor:none}
+body.touch .form-range::-webkit-slider-thumb{cursor:grab}
+
+/* ─── MODALS ──────────────────── */
+.modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .25s}
+.modal-backdrop.open{opacity:1;pointer-events:all}
+.modal-box{background:var(--c2);border:1px solid rgba(255,255,255,.08);padding:28px 32px;width:min(520px,94vw);transform:scale(.94);transition:transform .3s;max-height:90vh;overflow-y:auto}
+.modal-backdrop.open .modal-box{transform:scale(1)}
+.modal-title{font-family:var(--B);font-size:24px;font-weight:800;text-transform:uppercase;margin-bottom:20px}
+.modal-close{position:absolute;top:16px;right:16px;width:30px;height:30px;display:flex;align-items:center;justify-content:center;border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.4);cursor:none;font-size:16px;transition:all .2s;background:transparent}
+body.touch .modal-close{cursor:pointer}
+.modal-close:hover{border-color:var(--lime);color:var(--lime)}
+.modal-box{position:relative}
+.modal-ta{width:100%;background:rgba(255,255,255,.04);border:1.5px solid rgba(255,255,255,.08);color:var(--white);padding:14px;font-size:14px;line-height:1.7;resize:none;height:120px;outline:none;transition:border-color .2s;margin-bottom:18px}
+.modal-ta:focus{border-color:rgba(198,255,52,.3)}
+.modal-ta::placeholder{color:rgba(255,255,255,.2)}
+.slider-group{margin-bottom:20px}
+.slider-label{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;font-size:14px}
+.slider-val{font-family:var(--B);font-size:22px;font-weight:800;color:var(--lime)}
+.modal-slider{width:100%;-webkit-appearance:none;height:4px;background:rgba(255,255,255,.1);outline:none;margin-bottom:4px}
+.modal-slider::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:var(--lime);border:3px solid var(--c2);cursor:none}
+body.touch .modal-slider::-webkit-slider-thumb{cursor:grab}
+.session-modal-name{font-family:var(--B);font-size:28px;font-weight:800;text-transform:uppercase;margin-bottom:12px}
+.session-modal-detail{font-size:14px;color:rgba(255,255,255,.5);line-height:1.8;margin-bottom:24px}
+
+/* ─── TOAST ───────────────────── */
+.toast{
+  position:fixed;top:20px;right:20px;z-index:500;
+  background:var(--c2);border:1px solid rgba(255,255,255,.08);border-left:3px solid var(--lime);
+  padding:14px 18px;min-width:240px;max-width:320px;
+  display:flex;align-items:center;gap:12px;
+  transform:translateX(360px);opacity:0;transition:transform .35s cubic-bezier(.4,0,.2,1),opacity .35s;
+}
+.toast.show{transform:translateX(0);opacity:1}
+.toast-icon{color:var(--lime);flex-shrink:0}
+.toast-icon svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.toast-text{font-size:13px;line-height:1.5}
+.toast-text b{color:var(--white);display:block}
+
+/* ─── MOBILE BOTTOM NAV ───────── */
+.mobile-nav{display:none;position:fixed;bottom:0;left:0;right:0;z-index:100;background:#111;border-top:1px solid rgba(255,255,255,.06);flex-direction:row;justify-content:space-around;padding:8px 0 max(8px,env(safe-area-inset-bottom))}
+.mob-nav-item{display:flex;flex-direction:column;align-items:center;gap:4px;cursor:none;padding:4px 12px;color:rgba(255,255,255,.35);transition:color .2s;background:none;border:none;flex:1}
+body.touch .mob-nav-item{cursor:pointer}
+.mob-nav-item svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.mob-nav-item span{font-size:9px;letter-spacing:.04em;text-transform:uppercase;font-weight:500}
+.mob-nav-item.active{color:var(--lime)}
+
+/* ─── RESPONSIVE ──────────────── */
+@media(max-width:860px){
+  .sidebar{display:none}
+  .mobile-nav{display:flex}
+  .content{padding:20px 16px 80px}
+  .topbar{padding:0 16px}
+  .dash-grid{grid-template-columns:1fr}
+  .week-grid{grid-template-columns:repeat(4,1fr)}
+  .grid3,.grid2{grid-template-columns:1fr 1fr}
+  .bilan-hist-card{flex-direction:column;align-items:flex-start}
+  .chat-layout{grid-template-columns:1fr;height:auto}
+  .chat-list{display:none}
+  .cal-toggle{width:100%}
+  .cal-tab{flex:1;text-align:center}
+}
+@media(max-width:560px){
+  .week-grid{grid-template-columns:repeat(2,1fr)}
+  .grid3,.grid2{grid-template-columns:1fr}
+  .form-grid2{grid-template-columns:1fr}
+  .resa-card{flex-direction:column;align-items:flex-start}
+}
+</style>
+</head>
+<body>
+
+<div id="cd"></div>
+<div id="cr"></div>
+
+<!-- ═══ TOASTS ═══════════════════════════════════ -->
+<div class="toast" id="toast">
+  <div class="toast-icon"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
+  <div class="toast-text"><b id="toastTitle"></b><span id="toastMsg"></span></div>
+</div>
+
+<!-- ═══ MODAL DOULEUR ════════════════════════════ -->
+<div class="modal-backdrop" id="modalDouleur" role="dialog" aria-modal="true" aria-label="Signaler une douleur">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal('modalDouleur')" aria-label="Fermer">✕</button>
+    <div class="modal-title">🚨 Signaler une douleur</div>
+    <textarea class="modal-ta" id="douleurText" placeholder="Décris ta douleur ou difficulté (localisation, intensité, depuis quand...)"></textarea>
+    <div class="mz"><button class="btn-lime mag-btn" onclick="submitDouleur()">Envoyer au coach</button></div>
+  </div>
+</div>
+
+<!-- ═══ MODAL BILAN ══════════════════════════════ -->
+<div class="modal-backdrop" id="modalBilan" role="dialog" aria-modal="true" aria-label="Bilan hebdomadaire">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal('modalBilan')" aria-label="Fermer">✕</button>
+    <div class="modal-title">Bilan de la semaine</div>
+    <div class="slider-group">
+      <div class="slider-label"><span>Fatigue ressentie</span><span class="slider-val" id="fatigueVal">5</span></div>
+      <input class="modal-slider" type="range" min="1" max="10" value="5" id="fatigueSlider" oninput="document.getElementById('fatigueVal').textContent=this.value">
+    </div>
+    <div class="slider-group">
+      <div class="slider-label"><span>Motivation / Moral</span><span class="slider-val" id="moralVal">7</span></div>
+      <input class="modal-slider" type="range" min="1" max="10" value="7" id="moralSlider" oninput="document.getElementById('moralVal').textContent=this.value">
+    </div>
+    <textarea class="modal-ta" id="bilanText" placeholder="Comment s'est passée ta semaine ? Décris tes sensations, tes progrès, tes blocages..."></textarea>
+    <div class="mz"><button class="btn-lime mag-btn" onclick="submitBilan()">Envoyer à mon coach</button></div>
+  </div>
+</div>
+
+<!-- ═══ MODAL SÉANCE ══════════════════════════════ -->
+<div class="modal-backdrop" id="modalSeance" role="dialog" aria-modal="true" aria-label="Détail séance">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal('modalSeance')" aria-label="Fermer">✕</button>
+    <div class="session-modal-name" id="seanceModalName"></div>
+    <div class="session-modal-detail" id="seanceModalDetail"></div>
+    <div class="mz"><button class="btn-lime mag-btn" id="btnMarkDone">Marquer comme faite ✓</button></div>
+  </div>
+</div>
+
+<!-- ═══ APP ═══════════════════════════════════════ -->
+<div class="app">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" aria-label="Navigation">
+    <div class="sb-logo"><a href="/landing.html">SKARP<b>.</b></a></div>
+    <div class="sb-user">
+      <img class="sb-avatar" src="https://images.unsplash.com/photo-1568602471122-7832951cc4c5?w=80&q=75" alt="Thomas Roux">
+      <div class="sb-user-info">
+        <div class="sb-name">Thomas Roux</div>
+        <div class="sb-role">Sportif</div>
+      </div>
+    </div>
+    <nav class="sb-nav" aria-label="Menu principal">
+      <button class="nav-item active" data-view="dashboard" onclick="showView('dashboard',this)">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        Tableau de bord
+      </button>
+      <button class="nav-item" data-view="planning" onclick="showView('planning',this)">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        Mon planning
+      </button>
+      <button class="nav-item" data-view="bilans" onclick="showView('bilans',this)">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+        Mes bilans
+      </button>
+      <button class="nav-item" data-view="messagerie" onclick="showView('messagerie',this)">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        Messagerie
+        <span class="nav-badge">2</span>
+      </button>
+      <button class="nav-item" data-view="reservations" onclick="showView('reservations',this)">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        Mes réservations
+      </button>
+      <button class="nav-item" data-view="programmes" onclick="showView('programmes',this)">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 20h.01M7 20v-4M12 20v-8M17 20V8M22 4v16"/></svg>
+        Mes programmes
+      </button>
+      <button class="nav-item" data-view="profil" onclick="showView('profil',this)">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        Mon profil
+      </button>
+    </nav>
+    <div class="sb-bottom">
+      <button class="btn-logout" onclick="window.location.href='skarp-landing.html'">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Déconnexion
+      </button>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main">
+
+    <!-- TOPBAR -->
+    <div class="topbar">
+      <div class="topbar-title" id="topbarTitle">Tableau de bord</div>
+      <div class="topbar-r">
+        <button class="notif-btn" aria-label="Notifications">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          <span class="notif-dot" aria-label="Nouvelles notifications"></span>
+        </button>
+        <div class="top-avatar-wrap">
+          <img class="top-avatar" src="https://images.unsplash.com/photo-1568602471122-7832951cc4c5?w=80&q=75" alt="Thomas Roux" onclick="toggleDropdown()" id="topAvatarImg">
+          <div class="top-dropdown" id="topDropdown">
+            <div class="dd-item" onclick="showView('profil',null);toggleDropdown()">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              Mon profil
+            </div>
+            <div class="dd-item" onclick="showView('messagerie',null);toggleDropdown()">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+              Messagerie
+            </div>
+            <div class="dd-item" onclick="window.location.href='skarp-landing.html'" style="color:rgba(255,120,120,.6)">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+              Déconnexion
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CONTENT -->
+    <div class="content" id="mainContent">
+
+      <!-- ── VUE DASHBOARD ── -->
+      <div class="view active" id="view-dashboard">
+
+        <div class="welcome-band">
+          <h1 class="welcome-title">SALUT <b>THOMAS</b>,<br>PRÊT POUR CETTE SEMAINE&nbsp;?</h1>
+          <p class="welcome-sub">Objectif en cours : <strong>Prépa intersaison rugby</strong> · Semaine 5 sur 8</p>
+        </div>
+
+        <div class="dash-grid">
+          <div class="dash-main">
+
+            <!-- Coach actif -->
+            <div>
+              <div class="section-title" style="font-size:16px;margin-bottom:10px">MON <b>COACH</b></div>
+              <div class="coach-card-d">
+                <img class="coach-photo-d" src="https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=100&q=75" alt="Karim Mansour">
+                <div class="coach-info-d">
+                  <div class="coach-name-d">Karim Mansour</div>
+                  <div class="coach-title-d">Préparateur physique · Rugby & performance</div>
+                  <div class="coach-badge-d">Coaching actif depuis 5 semaines</div>
+                </div>
+                <div class="mz"><button class="btn-outline mag-btn" onclick="showView('messagerie',null)">Envoyer un message</button></div>
+              </div>
+            </div>
+
+            <!-- Alerte douleur -->
+            <button class="btn-alert" onclick="openModal('modalDouleur')" aria-label="Signaler une douleur">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Signaler une douleur ou difficulté
+            </button>
+
+            <!-- Planning semaine -->
+            <div>
+              <div class="section-title">CETTE <b>SEMAINE</b></div>
+              <div class="week-grid" id="weekGrid"></div>
+            </div>
+
+            <!-- Bilan -->
+            <div>
+              <div class="section-title">BILAN <b>HEBDOMADAIRE</b></div>
+              <div class="bilan-card" id="bilanCard">
+                <div class="bilan-status">
+                  <div class="bilan-dot" id="bilanDot"></div>
+                  <span class="bilan-label" id="bilanLabel">Ton bilan de la semaine n'est pas encore rempli</span>
+                </div>
+                <div class="mz" id="bilanBtnWrap"><button class="btn-lime mag-btn" onclick="openModal('modalBilan')">Remplir mon bilan</button></div>
+              </div>
+            </div>
+
+            <!-- Stats -->
+            <div>
+              <div class="section-title">MA <b>PROGRESSION</b></div>
+              <div class="grid3">
+                <div class="stat-card"><div class="stat-val-d" data-counter="14" data-of="16">0</div><div class="stat-lbl-d">Séances ce mois</div></div>
+                <div class="stat-card"><div class="stat-val-d" data-counter-streak="5">0</div><div class="stat-lbl-d">Semaines de streak</div></div>
+                <div class="stat-card"><div class="stat-val-d" style="color:var(--white)" data-next-bilan>2 jours</div><div class="stat-lbl-d">Prochain bilan dans</div></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- SIDE -->
+          <div class="dash-side">
+            <div class="section-title" style="font-size:16px">MESSAGES <b>RÉCENTS</b></div>
+            <div class="card" id="msgPreviewList">
+              <div class="msg-preview">
+                <img class="msg-av" src="https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=60&q=75" alt="Karim">
+                <div class="msg-body">
+                  <div class="msg-head"><span class="msg-name">Karim</span><span class="msg-time">Hier 18:32</span></div>
+                  <div class="msg-text">Excellent travail cette semaine Thomas ! La progression sur les sprints est vraiment…</div>
+                </div>
+              </div>
+              <div class="msg-preview">
+                <img class="msg-av" src="https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=60&q=75" alt="Karim">
+                <div class="msg-body">
+                  <div class="msg-head"><span class="msg-name">Karim</span><span class="msg-time">Mar 14:15</span></div>
+                  <div class="msg-text">N'oublie pas l'échauffement avant la séance de jeudi — 12 min minimum…</div>
+                </div>
+              </div>
+              <div class="msg-preview">
+                <img class="msg-av" src="https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=60&q=75" alt="Karim">
+                <div class="msg-body">
+                  <div class="msg-head"><span class="msg-name">Karim</span><span class="msg-time">Lun 9:07</span></div>
+                  <div class="msg-text">Le bilan semaine 3 est dispo, jette un œil quand tu peux 👀</div>
+                </div>
+              </div>
+              <button class="link-more" onclick="showView('messagerie',null)">Voir tous les messages →</button>
+            </div>
+          </div>
+        </div>
+      </div><!-- /dashboard -->
+
+      <!-- ── VUE PLANNING ── -->
+      <div class="view" id="view-planning">
+        <div class="section-title">MON <b>PLANNING</b></div>
+        <div style="display:flex;align-items:center;gap:20px;flex-wrap:wrap;margin-bottom:20px">
+          <div class="cal-toggle">
+            <button class="cal-tab active" id="tabWeek" onclick="calView('week')">Semaine</button>
+            <button class="cal-tab" id="tabMonth" onclick="calView('month')">Mois</button>
+          </div>
+          <div class="cal-legend">
+            <div class="leg-item"><div class="leg-dot leg-planned"></div>Prévue</div>
+            <div class="leg-item"><div class="leg-dot leg-done"></div>Réalisée</div>
+            <div class="leg-item"><div class="leg-dot leg-missed"></div>Manquée</div>
+            <div class="leg-item"><div class="leg-dot leg-rest"></div>Repos</div>
+          </div>
+        </div>
+        <div class="cal-nav">
+          <button onclick="calNav(-1)" aria-label="Précédent"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button>
+          <div class="cal-month-title" id="calTitle"></div>
+          <button onclick="calNav(1)" aria-label="Suivant"><svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></button>
+        </div>
+        <div id="calContent"></div>
+      </div>
+
+      <!-- ── VUE BILANS ── -->
+      <div class="view" id="view-bilans">
+        <div class="section-title">MES <b>BILANS</b></div>
+        <div id="bilanHistList"></div>
+        <div class="mz" style="margin-top:8px"><button class="btn-lime mag-btn" onclick="openModal('modalBilan')">Remplir le bilan de cette semaine</button></div>
+      </div>
+
+      <!-- ── VUE MESSAGERIE ── -->
+      <div class="view" id="view-messagerie">
+        <div class="section-title">MESSAGERIE</div>
+        <div class="chat-layout">
+          <div class="chat-list">
+            <div class="chat-conv active">
+              <img class="chat-conv-av" src="https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=80&q=75" alt="Karim">
+              <div class="chat-conv-info">
+                <div class="chat-conv-name">Karim Mansour</div>
+                <div class="chat-conv-last">Excellent travail cette semaine…</div>
+              </div>
+            </div>
+          </div>
+          <div class="chat-window">
+            <div class="chat-header">
+              <img class="chat-header-av" src="https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=80&q=75" alt="Karim">
+              <div>
+                <div class="chat-header-name">Karim Mansour</div>
+                <div class="chat-header-status">En ligne</div>
+              </div>
+            </div>
+            <div class="chat-messages" id="chatMessages"></div>
+            <div class="chat-input-area">
+              <textarea class="chat-input" id="chatInput" placeholder="Écris un message…" rows="1" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMsg()}"></textarea>
+              <button class="btn-send" onclick="sendMsg()" aria-label="Envoyer">
+                <svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── VUE RÉSERVATIONS ── -->
+      <div class="view" id="view-reservations">
+        <div class="section-title">MES <b>RÉSERVATIONS</b></div>
+        <div style="margin-bottom:12px;font-size:13px;color:rgba(255,255,255,.3);letter-spacing:.04em;text-transform:uppercase;font-weight:500">À venir</div>
+        <div class="resa-card">
+          <div class="resa-date-block"><div class="resa-day-num">03</div><div class="resa-month">Juil</div></div>
+          <div class="resa-info">
+            <div class="resa-title">Séance présentiel — Explosivité sprint</div>
+            <div class="resa-meta">
+              <span><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>10h00 – 11h30</span>
+              <span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>Stade Bordelais · Bordeaux</span>
+            </div>
+          </div>
+          <div class="resa-actions"><button class="btn-cancel" onclick="showToast('Réservation annulée','Annulation confirmée pour le 3 juillet.')">Annuler</button></div>
+        </div>
+        <div class="resa-card">
+          <div class="resa-date-block"><div class="resa-day-num">10</div><div class="resa-month">Juil</div></div>
+          <div class="resa-info">
+            <div class="resa-title">Séance présentiel — Séance force rugby</div>
+            <div class="resa-meta">
+              <span><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>09h00 – 10h30</span>
+              <span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>Salle Form One · Mérignac</span>
+            </div>
+          </div>
+          <div class="resa-actions"><button class="btn-cancel" onclick="showToast('Réservation annulée','Annulation confirmée pour le 10 juillet.')">Annuler</button></div>
+        </div>
+        <div style="margin:24px 0 12px;font-size:13px;color:rgba(255,255,255,.3);letter-spacing:.04em;text-transform:uppercase;font-weight:500">Historique</div>
+        <div class="resa-card" style="opacity:.5">
+          <div class="resa-date-block"><div class="resa-day-num">20</div><div class="resa-month">Juin</div></div>
+          <div class="resa-info">
+            <div class="resa-title">Séance présentiel — Évaluation physique</div>
+            <div class="resa-meta">
+              <span><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>10h00 – 11h00</span>
+              <span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>Stade Bordelais · Bordeaux</span>
+            </div>
+          </div>
+          <div class="resa-actions"><span class="tag">Réalisée</span></div>
+        </div>
+      </div>
+
+      <!-- ── VUE PROGRAMMES ── -->
+      <div class="view" id="view-programmes">
+        <div class="section-title">MES <b>PROGRAMMES</b></div>
+        <div class="prog-grid">
+          <div class="prog-card-d">
+            <div class="prog-img"><img src="https://images.unsplash.com/photo-1571731956672-f2b94d7dd0cb?w=600&q=75" alt="Coaching personnalisé" loading="lazy"></div>
+            <div class="prog-body">
+              <div class="prog-title-d">Coaching personnalisé</div>
+              <div class="prog-meta-d"><span class="tag lime">Actif</span><span class="tag">8 semaines</span></div>
+              <div class="prog-status">
+                <span class="status-badge ongoing">En cours — sem. 5/8</span>
+                <span class="prog-pct">62%</span>
+              </div>
+            </div>
+          </div>
+          <div class="prog-card-d">
+            <div class="prog-img"><img src="https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?w=600&q=75" alt="Prépa intersaison" loading="lazy"></div>
+            <div class="prog-body">
+              <div class="prog-title-d">Prépa intersaison rugby</div>
+              <div class="prog-meta-d"><span class="tag">8 semaines</span><span class="tag">Intermédiaire</span></div>
+              <div class="prog-status">
+                <span class="status-badge done">Terminé</span>
+                <span class="prog-pct">100%</span>
+              </div>
+            </div>
+          </div>
+          <div class="prog-card-d">
+            <div class="prog-img"><img src="https://images.unsplash.com/photo-1517838277966-e4e5c3d8c0bd?w=600&q=75" alt="Force maximale" loading="lazy"></div>
+            <div class="prog-body">
+              <div class="prog-title-d">Force maximale prop</div>
+              <div class="prog-meta-d"><span class="tag">12 semaines</span><span class="tag">Avancé</span></div>
+              <div class="prog-status">
+                <span class="status-badge done">Terminé</span>
+                <span class="prog-pct">100%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div style="margin-top:24px">
+          <div class="mz"><a href="/coach-profil.html" class="btn-outline mag-btn">Découvrir de nouveaux programmes</a></div>
+        </div>
+      </div>
+
+      <!-- ── VUE PROFIL ── -->
+      <div class="view" id="view-profil">
+        <div class="section-title">MON <b>PROFIL</b></div>
+        <form class="profil-form" onsubmit="saveProfile(event)">
+          <div class="form-grid2">
+            <div class="form-group"><label class="form-label">Prénom</label><input class="form-input" type="text" value="Thomas"></div>
+            <div class="form-group"><label class="form-label">Nom</label><input class="form-input" type="text" value="Roux"></div>
+          </div>
+          <div class="form-group"><label class="form-label">Email</label><input class="form-input" type="email" value="thomas.roux@email.com"></div>
+          <div class="form-group"><label class="form-label">Sport principal</label>
+            <select class="form-select">
+              <option selected>Rugby</option><option>Football</option><option>Musculation</option>
+              <option>Running</option><option>Natation</option><option>Cyclisme</option>
+            </select>
+          </div>
+          <div class="form-group"><label class="form-label">Poste / Discipline</label><input class="form-input" type="text" value="Ailier"></div>
+          <div class="form-group"><label class="form-label">Objectif principal</label>
+            <select class="form-select">
+              <option selected>Prépa intersaison</option><option>Prise de masse</option>
+              <option>Perte de poids</option><option>Remise en forme</option>
+              <option>Performance / compétition</option><option>Récupération blessure</option>
+            </select>
+          </div>
+          <div class="form-group"><label class="form-label">Niveau de pratique</label>
+            <select class="form-select">
+              <option>Débutant</option><option>Amateur</option>
+              <option selected>Confirmé</option><option>Compétition</option><option>Semi-pro</option>
+            </select>
+          </div>
+          <div class="form-group form-range-wrap">
+            <label class="form-label">Séances par semaine</label>
+            <div class="form-range-val" id="profileSeancesVal">4</div>
+            <input class="form-range" type="range" min="1" max="7" value="4" oninput="document.getElementById('profileSeancesVal').textContent=this.value">
+          </div>
+          <div class="form-group"><label class="form-label">Ville</label><input class="form-input" type="text" value="Bordeaux"></div>
+          <div class="form-group"><label class="form-label">Blessures / contraintes</label>
+            <textarea class="form-input" rows="3" style="resize:none">Légère entorse cheville droite (2022), attention au travail en déséquilibre.</textarea>
+          </div>
+          <div class="mz"><button type="submit" class="btn-lime mag-btn">Enregistrer les modifications</button></div>
+        </form>
+      </div>
+
+    </div><!-- /content -->
+  </div><!-- /main -->
+</div><!-- /app -->
+
+<!-- MOBILE NAV -->
+<nav class="mobile-nav" aria-label="Navigation mobile">
+  <button class="mob-nav-item active" data-view="dashboard" onclick="showView('dashboard',this)">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+    <span>Dashboard</span>
+  </button>
+  <button class="mob-nav-item" data-view="planning" onclick="showView('planning',this)">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+    <span>Planning</span>
+  </button>
+  <button class="mob-nav-item" data-view="messagerie" onclick="showView('messagerie',this)">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+    <span>Messages</span>
+  </button>
+  <button class="mob-nav-item" data-view="profil" onclick="showView('profil',this)">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+    <span>Profil</span>
+  </button>
+</nav>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<script>
+/* ═══ CURSOR ═══════════════════════════════════ */
+const isTouch=('ontouchstart' in window)||navigator.maxTouchPoints>0;
+if(isTouch) document.body.classList.add('touch');
+const cd=document.getElementById('cd'), cr=document.getElementById('cr');
+if(!isTouch){
+  const qx=gsap.quickTo(cr,'x',{duration:.14,ease:'none'});
+  const qy=gsap.quickTo(cr,'y',{duration:.14,ease:'none'});
+  document.addEventListener('mousemove',e=>{gsap.set(cd,{x:e.clientX,y:e.clientY});qx(e.clientX);qy(e.clientY)});
+  function bindHover(){
+    document.querySelectorAll('a,button,input,select,textarea,.nav-item,.day-card,.prog-card-d,.resa-card').forEach(el=>{
+      el.addEventListener('mouseenter',()=>{cd.classList.add('h');cr.classList.add('h')});
+      el.addEventListener('mouseleave',()=>{cd.classList.remove('h');cr.classList.remove('h')});
+    });
+  }
+  bindHover();
+}
+
+/* ═══ MAGNETIC ════════════════════════════════ */
+if(!isTouch){
+  function initMagnetic(){
+    document.querySelectorAll('.mz').forEach(zone=>{
+      if(zone._mag) return;
+      zone._mag=true;
+      const btn=zone.querySelector('.mag-btn,.btn-lime,.btn-outline');
+      if(!btn) return;
+      zone.addEventListener('mousemove',e=>{
+        const r=zone.getBoundingClientRect();
+        gsap.to(btn,{x:gsap.utils.mapRange(r.left,r.right,-r.width/2,r.width/2,e.clientX)*.3,y:gsap.utils.mapRange(r.top,r.bottom,-r.height/2,r.height/2,e.clientY)*.3,duration:.4,ease:'power2.out',overwrite:true});
+      });
+      zone.addEventListener('mouseleave',()=>gsap.to(btn,{x:0,y:0,duration:.7,ease:'elastic.out(1,.4)',overwrite:true}));
+    });
+  }
+  initMagnetic();
+}
+
+/* ═══ VIEW SWITCHING ══════════════════════════ */
+const VIEW_TITLES={dashboard:'Tableau de bord',planning:'Mon planning',bilans:'Mes bilans',messagerie:'Messagerie',reservations:'Mes réservations',programmes:'Mes programmes',profil:'Mon profil'};
+
+function showView(name, triggerEl){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.getElementById('view-'+name).classList.add('active');
+  document.getElementById('topbarTitle').textContent=VIEW_TITLES[name]||name;
+
+  // sidebar
+  document.querySelectorAll('.nav-item[data-view]').forEach(i=>i.classList.toggle('active',i.dataset.view===name));
+  // mobile nav
+  document.querySelectorAll('.mob-nav-item[data-view]').forEach(i=>i.classList.toggle('active',i.dataset.view===name));
+
+  // view-specific init
+  if(name==='planning') initCal();
+  if(name==='bilans') renderBilanHist();
+  if(name==='messagerie') initChat();
+  if(!isTouch) setTimeout(()=>{initMagnetic();},50);
+}
+
+/* ═══ WEEK PLANNING ═══════════════════════════ */
+const DAYS=['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'];
+const SESSIONS=[
+  {name:'Repos actif',type:'repos',done:true,detail:'Marche légère 30min + étirements. Pas d\'effort intense.'},
+  {name:'Explosivité sprint',type:'force',done:true,detail:'Échauffement 12min. 6×40m sprint max. Récup 3min. Gainage planche 3×1min.'},
+  {name:'Cardio rugby',type:'cardio',done:true,detail:'Circuit cardio spécifique rugby. Intervalles 30s/30s × 10 séries. Cooper test en fin de séance.'},
+  {name:'Repos',type:'repos',done:false,detail:'Journée de récupération complète. Hydratation ++.'},
+  {name:'Force haut du corps',type:'force',done:false,detail:'Développé couché 4×6. Rowing barre 4×8. Tractions 3×max. Finisher épaules.'},
+  {name:null,type:null,done:false,detail:''},
+  {name:'Séance terrain',type:'match',done:false,detail:'Séance collective avec le club. Travail de jeu au pied + situation de jeu.'},
+];
+
+function buildWeekGrid(){
+  const today=new Date();
+  const dayOfWeek=today.getDay()===0?6:today.getDay()-1; // 0=Mon
+  const grid=document.getElementById('weekGrid');
+  if(!grid) return;
+  grid.innerHTML='';
+  DAYS.forEach((d,i)=>{
+    const date=new Date(today);
+    date.setDate(today.getDate()-dayOfWeek+i);
+    const isPast=i<dayOfWeek;
+    const isTod=i===dayOfWeek;
+    const s=SESSIONS[i];
+    const typeClass=s.type?`dt-${s.type}`:'';
+    const div=document.createElement('div');
+    div.className=`day-card${isTod?' today':''}${isPast?' past':''}`;
+    div.innerHTML=`
+      <div class="day-label">${d}</div>
+      <div class="day-num">${date.getDate()}</div>
+      ${s.type?`<div class="day-type-dot ${typeClass}"></div>`:''}
+      <div class="day-session">${s.name||'<span style="color:rgba(255,255,255,.15)">—</span>'}</div>
+      <div class="day-check${s.done?' done':''}">
+        ${s.done?`<svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>`:''}
+      </div>`;
+    if(s.name && !s.done && !isPast){
+      div.addEventListener('click',()=>openSeanceModal(s,i));
+    }
+    grid.appendChild(div);
+  });
+}
+
+let pendingSeanceIdx=null;
+function openSeanceModal(s,idx){
+  document.getElementById('seanceModalName').textContent=s.name;
+  document.getElementById('seanceModalDetail').textContent=s.detail;
+  pendingSeanceIdx=idx;
+  openModal('modalSeance');
+  document.getElementById('btnMarkDone').onclick=()=>{
+    SESSIONS[pendingSeanceIdx].done=true;
+    closeModal('modalSeance');
+    buildWeekGrid();
+    showToast('Séance validée ✓','Super, continue comme ça !');
+  };
+}
+
+/* ═══ COUNTERS ════════════════════════════════ */
+function initCounters(){
+  document.querySelectorAll('[data-counter]').forEach(el=>{
+    const n=parseInt(el.dataset.counter), of=el.dataset.of;
+    const obj={v:0};
+    gsap.to(obj,{v:n,duration:1.4,ease:'power2.out',delay:.2,
+      onUpdate(){el.textContent=Math.round(obj.v)+(of?'/'+of:'')}});
+  });
+  document.querySelectorAll('[data-counter-streak]').forEach(el=>{
+    const n=parseInt(el.dataset.counterStreak);
+    const obj={v:0};
+    gsap.to(obj,{v:n,duration:1.4,ease:'power2.out',delay:.4,
+      onUpdate(){el.textContent=Math.round(obj.v)+'🔥'}});
+  });
+}
+
+/* ═══ MODALS ══════════════════════════════════ */
+function openModal(id){document.getElementById(id).classList.add('open');document.body.style.overflow='hidden'}
+function closeModal(id){document.getElementById(id).classList.remove('open');document.body.style.overflow=''}
+document.querySelectorAll('.modal-backdrop').forEach(m=>{
+  m.addEventListener('click',e=>{if(e.target===m)closeModal(m.id)});
+});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')document.querySelectorAll('.modal-backdrop.open').forEach(m=>closeModal(m.id))});
+
+/* ═══ DOULEUR ═════════════════════════════════ */
+function submitDouleur(){
+  const txt=document.getElementById('douleurText').value.trim();
+  closeModal('modalDouleur');
+  document.getElementById('douleurText').value='';
+  showToast('Ton coach a été alerté','Karim va revenir vers toi rapidement.');
+}
+
+/* ═══ BILAN ═══════════════════════════════════ */
+let bilanDone=false;
+function submitBilan(){
+  bilanDone=true;
+  closeModal('modalBilan');
+  document.getElementById('bilanDot').classList.add('done');
+  document.getElementById('bilanLabel').textContent='Bilan de la semaine envoyé ✓';
+  document.getElementById('bilanBtnWrap').innerHTML='';
+  showToast('Bilan envoyé ✓','Karim analysera tes résultats et te répondra bientôt.');
+}
+
+/* ═══ TOAST ═══════════════════════════════════ */
+let toastTimer=null;
+function showToast(title,msg){
+  const t=document.getElementById('toast');
+  document.getElementById('toastTitle').textContent=title;
+  document.getElementById('toastMsg').textContent=msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>t.classList.remove('show'),3500);
+}
+
+/* ═══ DROPDOWN ════════════════════════════════ */
+function toggleDropdown(){document.getElementById('topDropdown').classList.toggle('show')}
+document.addEventListener('click',e=>{
+  if(!e.target.closest('.top-avatar-wrap')) document.getElementById('topDropdown').classList.remove('show');
+});
+
+/* ═══ CALENDAR ════════════════════════════════ */
+let calMode='week', calOffset=0;
+const CAL_EVENTS={
+  '2026-06-22':'done','2026-06-23':'done','2026-06-25':'done',
+  '2026-06-29':'done','2026-06-30':'planned','2026-07-01':'rest',
+  '2026-07-02':'planned','2026-07-03':'done','2026-07-05':'planned',
+  '2026-07-07':'planned','2026-07-08':'planned','2026-07-10':'planned',
+};
+
+function calView(mode){
+  calMode=mode;calOffset=0;
+  document.getElementById('tabWeek').classList.toggle('active',mode==='week');
+  document.getElementById('tabMonth').classList.toggle('active',mode==='month');
+  renderCal();
+}
+function calNav(d){calOffset+=d;renderCal()}
+
+function renderCal(){
+  const today=new Date(2026,5,30);
+  if(calMode==='week'){
+    const dow=today.getDay()===0?6:today.getDay()-1;
+    const monday=new Date(today);monday.setDate(today.getDate()-dow+calOffset*7);
+    document.getElementById('calTitle').textContent=`Semaine du ${monday.getDate()} ${['jan','fév','mar','avr','mai','juin','juil','août','sep','oct','nov','déc'][monday.getMonth()]}`;
+    let html='<div class="week-grid">';
+    for(let i=0;i<7;i++){
+      const d=new Date(monday);d.setDate(monday.getDate()+i);
+      const key=d.toISOString().slice(0,10);
+      const ev=CAL_EVENTS[key];
+      const isT=d.toDateString()===today.toDateString();
+      const dotCol=ev==='done'?'#22c55e':ev==='planned'?'var(--lime)':ev==='missed'?'rgba(255,77,77,.6)':'rgba(255,255,255,.2)';
+      html+=`<div class="day-card${isT?' today':''}${d<today&&!isT?' past':''}">
+        <div class="day-label">${DAYS[i]}</div>
+        <div class="day-num">${d.getDate()}</div>
+        ${ev?`<div class="day-type-dot" style="background:${dotCol}"></div>`:''}
+        <div class="day-session" style="font-size:10px">${ev==='done'?'Réalisée':ev==='planned'?'Prévue':ev==='rest'?'Repos':ev==='missed'?'Manquée':'Libre'}</div>
+        <div class="day-check${ev==='done'?' done':''}">${ev==='done'?'<svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>':''}</div>
+      </div>`;
+    }
+    html+='</div>';
+    document.getElementById('calContent').innerHTML=html;
+  } else {
+    const base=new Date(today.getFullYear(),today.getMonth()+calOffset,1);
+    const MOIS=['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
+    document.getElementById('calTitle').textContent=`${MOIS[base.getMonth()]} ${base.getFullYear()}`;
+    const first=new Date(base);first.setDate(1);
+    const startDow=first.getDay()===0?6:first.getDay()-1;
+    const daysInMonth=new Date(base.getFullYear(),base.getMonth()+1,0).getDate();
+    let html='<div class="month-grid">';
+    DAYS.forEach(d=>{html+=`<div class="month-day-head">${d}</div>`});
+    for(let i=0;i<startDow;i++) html+=`<div class="month-day other"></div>`;
+    for(let d=1;d<=daysInMonth;d++){
+      const dd=new Date(base.getFullYear(),base.getMonth(),d);
+      const key=dd.toISOString().slice(0,10);
+      const ev=CAL_EVENTS[key];
+      const isT=dd.toDateString()===today.toDateString();
+      const dotCol=ev==='done'?'#22c55e':ev==='planned'?'var(--lime)':ev==='missed'?'rgba(255,77,77,.5)':ev==='rest'?'rgba(255,255,255,.2)':null;
+      html+=`<div class="month-day${isT?' today-d':''}">${d}${dotCol?`<div class="dot" style="background:${dotCol}"></div>`:''}`;
+      html+=`</div>`;
+    }
+    html+='</div>';
+    document.getElementById('calContent').innerHTML=html;
+  }
+}
+
+function initCal(){calOffset=0;calMode='week';document.getElementById('tabWeek').classList.add('active');document.getElementById('tabMonth').classList.remove('active');renderCal();}
+
+/* ═══ BILANS HISTORIQUE ═══════════════════════ */
+const BILAN_HIST=[
+  {week:'Sem. 4 — 16 au 22 juin',fatigue:6,moral:8,text:'Bonne semaine dans l\'ensemble. La séance de sprint du mardi était très intense mais j\'ai bien géré. Un peu fatigué en fin de semaine mais la récup du dimanche a aidé.'},
+  {week:'Sem. 3 — 9 au 15 juin',fatigue:4,moral:9,text:'Excellente semaine ! Je sens vraiment la progression sur la vitesse. Mon coach a ajusté les charges suite à mon retour et ça m\'a convenu parfaitement.'},
+  {week:'Sem. 2 — 2 au 8 juin',fatigue:7,moral:6,text:'Semaine difficile avec beaucoup de boulot à côté. J\'ai quand même réussi à faire 4 séances sur 5 prévues. La séance de force a été skippée.'},
+  {week:'Sem. 1 — 26 mai au 1er juin',fatigue:5,moral:7,text:'Première semaine du programme. Bonne entrée en matière, muscles courbaturés mais c\'est normal au démarrage.'},
+];
+
+function renderBilanHist(){
+  const list=document.getElementById('bilanHistList');
+  if(!list) return;
+  list.innerHTML=BILAN_HIST.map(b=>{
+    const fCirc=2*Math.PI*20;
+    const fDash=(b.fatigue/10)*fCirc;
+    const mDash=(b.moral/10)*fCirc;
+    return`<div class="bilan-hist-card">
+      <div class="bilan-week">${b.week}</div>
+      <div class="bilan-scores">
+        <div class="bilan-score-item">
+          <div class="score-bar-wrap">
+            <svg viewBox="0 0 50 50"><circle cx="25" cy="25" r="20" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="4"/><circle cx="25" cy="25" r="20" fill="none" stroke="var(--red)" stroke-width="4" stroke-dasharray="${fDash} ${fCirc}" stroke-dashoffset="${fCirc*.25}" stroke-linecap="round"/></svg>
+            <div class="score-num" style="color:var(--red)">${b.fatigue}</div>
+          </div>
+          <div class="score-label">Fatigue</div>
+        </div>
+        <div class="bilan-score-item">
+          <div class="score-bar-wrap">
+            <svg viewBox="0 0 50 50"><circle cx="25" cy="25" r="20" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="4"/><circle cx="25" cy="25" r="20" fill="none" stroke="var(--lime)" stroke-width="4" stroke-dasharray="${mDash} ${fCirc}" stroke-dashoffset="${fCirc*.25}" stroke-linecap="round"/></svg>
+            <div class="score-num">${b.moral}</div>
+          </div>
+          <div class="score-label">Moral</div>
+        </div>
+      </div>
+      <div class="bilan-excerpt">${b.text}</div>
+    </div>`}).join('');
+}
+
+/* ═══ CHAT ════════════════════════════════════ */
+const CHAT_MSGS=[
+  {from:'coach',text:'Salut Thomas ! Bienvenue dans ton espace coaching. On démarre la semaine 5 aujourd\'hui — j\'ai préparé un programme légèrement plus intense sur les sprints. Tu vas voir, ça va payer.',time:'Lun 8:00'},
+  {from:'me',text:'Super Karim, j\'ai hâte ! J\'ai bien récupéré ce week-end.',time:'Lun 9:14'},
+  {from:'coach',text:'Le bilan semaine 3 est dispo, jette un œil quand tu peux 👀',time:'Lun 9:07'},
+  {from:'coach',text:'N\'oublie pas l\'échauffement avant la séance de jeudi — 12 min minimum avec travail de mobilité cheville.',time:'Mar 14:15'},
+  {from:'me',text:'Noté ! D\'ailleurs j\'ai eu une légère gêne au mollet en fin de séance hier, c\'est normal ?',time:'Mar 16:42'},
+  {from:'coach',text:'Rien d\'inquiétant si c\'est une tension musculaire. Applique du froid 15min ce soir et dis-moi demain. Si la douleur persiste, utilise le bouton "Signaler une douleur" sur ton dashboard.',time:'Mar 17:03'},
+  {from:'coach',text:'Excellent travail cette semaine Thomas ! La progression sur les sprints est vraiment notable. Continue comme ça 💪',time:'Hier 18:32'},
+];
+
+function initChat(){
+  const container=document.getElementById('chatMessages');
+  if(!container||container._init) return;
+  container._init=true;
+  container.innerHTML=CHAT_MSGS.map(m=>`
+    <div class="bubble-row${m.from==='me'?' me':''}">
+      ${m.from==='coach'?`<img class="bubble-av" src="https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=60&q=75" alt="Karim">`:''}
+      <div>
+        <div class="bubble ${m.from==='coach'?'coach':'me'}">${m.text}</div>
+        <span class="bubble-time">${m.time}</span>
+      </div>
+      ${m.from==='me'?`<img class="bubble-av" src="https://images.unsplash.com/photo-1568602471122-7832951cc4c5?w=60&q=75" alt="Moi">`:''}
+    </div>`).join('');
+  container.scrollTop=container.scrollHeight;
+}
+
+function sendMsg(){
+  const input=document.getElementById('chatInput');
+  const txt=input.value.trim();
+  if(!txt) return;
+  const container=document.getElementById('chatMessages');
+  const now=new Date();
+  const time=`${now.getHours()}h${String(now.getMinutes()).padStart(2,'0')}`;
+  const div=document.createElement('div');
+  div.className='bubble-row me';
+  div.innerHTML=`
+    <div>
+      <div class="bubble me">${txt}</div>
+      <span class="bubble-time">${time}</span>
+    </div>
+    <img class="bubble-av" src="https://images.unsplash.com/photo-1568602471122-7832951cc4c5?w=60&q=75" alt="Moi">`;
+  container.appendChild(div);
+  input.value='';
+  container.scrollTop=container.scrollHeight;
+  gsap.from(div,{opacity:0,x:20,duration:.3,ease:'power2.out'});
+  setTimeout(()=>{
+    const reply=document.createElement('div');
+    reply.className='bubble-row';
+    reply.innerHTML=`
+      <img class="bubble-av" src="https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=60&q=75" alt="Karim">
+      <div>
+        <div class="bubble coach">Message reçu ! Je reviens vers toi dès que possible 💪</div>
+        <span class="bubble-time">maintenant</span>
+      </div>`;
+    container.appendChild(reply);
+    container.scrollTop=container.scrollHeight;
+    gsap.from(reply,{opacity:0,x:-20,duration:.3,ease:'power2.out'});
+  },1000);
+}
+
+/* ═══ PROFIL SAVE ═════════════════════════════ */
+function saveProfile(e){
+  e.preventDefault();
+  showToast('Profil mis à jour ✓','Tes informations ont été enregistrées.');
+}
+
+/* ═══ INIT ════════════════════════════════════ */
+buildWeekGrid();
+initCounters();
+
+gsap.from('.topbar',{opacity:0,y:-16,duration:.5,ease:'power2.out'});
+gsap.from('.sidebar',{opacity:0,x:-20,duration:.55,ease:'power2.out'});
+gsap.from('#view-dashboard > *',{opacity:0,y:24,duration:.5,ease:'power3.out',stagger:.07,delay:.15});
+</script>
+</body>
+</html>

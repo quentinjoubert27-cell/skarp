@@ -1,0 +1,1313 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SKARP — Trouve le coach qui te correspond vraiment</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,700;0,800;1,700;1,800&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css"/>
+<style>
+/* ─── RESET ─────────────────────────────────────────────────────── */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --lime:#C6FF34;
+  --carbon:#171717;
+  --carbon2:#262626;
+  --white:#fff;
+  --B:'Barlow Condensed',sans-serif;
+  --S:'DM Sans',sans-serif;
+}
+html{scroll-behavior:smooth}
+body{
+  background:var(--carbon);color:var(--white);
+  font-family:var(--S);font-size:16px;
+  overflow-x:hidden;cursor:none;
+}
+body.touch{cursor:auto}
+a{color:inherit;text-decoration:none}
+img{display:block;max-width:100%}
+button{cursor:none;border:none;background:none;font-family:var(--S)}
+body.touch button{cursor:pointer}
+
+/* ─── CURSOR ─────────────────────────────────────────────────────── */
+#cd{position:fixed;width:8px;height:8px;background:var(--lime);border-radius:50%;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);transition:width .12s,height .12s}
+#cr{position:fixed;width:32px;height:32px;border:1.5px solid rgba(255,255,255,.5);border-radius:50%;pointer-events:none;z-index:9998;transform:translate(-50%,-50%);transition:border-color .2s,width .2s,height .2s}
+#cd.h{width:14px;height:14px}
+#cr.h{width:44px;height:44px;border-color:var(--lime)}
+
+/* ─── SMOOTH ─────────────────────────────────────────────────────── */
+#sw{overflow:hidden}
+#sc{will-change:transform}
+
+/* ─── NAVBAR ─────────────────────────────────────────────────────── */
+.nav{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:18px 40px;
+  transition:background .35s,border-color .35s;
+  border-bottom:1px solid transparent;
+}
+.nav.on{background:var(--carbon);border-color:rgba(198,255,52,.15)}
+.logo{font-family:var(--B);font-size:32px;font-weight:800;letter-spacing:.02em;line-height:1}
+.logo b{color:var(--lime)}
+.nav-r{display:flex;align-items:center;gap:32px}
+.nav-link{font-size:13px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;position:relative}
+.nav-link::after{content:'';position:absolute;bottom:-2px;left:0;right:0;height:1.5px;background:var(--lime);transform:scaleX(0);transform-origin:left;transition:transform .28s}
+.nav-link:hover::after{transform:scaleX(1)}
+.nav-cta{
+  font-family:var(--B);font-size:16px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;
+  background:var(--lime);color:var(--carbon);
+  padding:10px 26px;border-radius:0;
+}
+.burger{display:none;flex-direction:column;gap:5px;width:26px;cursor:none}
+body.touch .burger{cursor:pointer}
+.burger span{display:block;height:2px;background:var(--white);transition:transform .3s,opacity .3s}
+.mob-nav{position:fixed;inset:0;background:var(--carbon);z-index:99;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:0;padding:0 40px;opacity:0;pointer-events:none;transition:opacity .35s}
+.mob-nav.open{opacity:1;pointer-events:all}
+.mob-nav a{font-family:var(--B);font-size:clamp(52px,12vw,88px);font-weight:800;text-transform:uppercase;line-height:1;border-bottom:1px solid rgba(255,255,255,.06);width:100%;padding:12px 0;display:block}
+.mob-nav a:last-child{color:var(--lime)}
+
+/* ═══════════════════════════════════════════════════════════════════
+   HERO — full typo, poster
+═══════════════════════════════════════════════════════════════════ */
+.hero{
+  min-height:100svh;
+  display:grid;grid-template-rows:1fr auto;
+  padding-top:90px;overflow-x:hidden;position:relative;
+}
+/* Background grid lines subtil */
+.hero::before{
+  content:'';position:absolute;inset:0;
+  background-image:
+    linear-gradient(rgba(198,255,52,.04) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(198,255,52,.04) 1px,transparent 1px);
+  background-size:60px 60px;pointer-events:none;
+}
+.hero-top{
+  display:flex;flex-direction:column;justify-content:center;
+  padding:40px 40px 0;position:relative;
+}
+.hero-eyebrow{
+  font-size:11px;font-weight:500;letter-spacing:.2em;text-transform:uppercase;
+  color:var(--lime);margin-bottom:24px;
+  display:flex;align-items:center;gap:12px;
+}
+.hero-eyebrow::before{content:'';display:block;width:32px;height:1px;background:var(--lime)}
+/* Giant headline */
+.hero-h{
+  font-family:var(--B);font-weight:800;text-transform:uppercase;
+  font-size:clamp(70px,13vw,190px);
+  line-height:.88;letter-spacing:-.02em;
+  position:relative;
+}
+.hero-h .line1{display:block;color:var(--white)}
+.hero-h .line2{display:block;color:var(--lime);-webkit-text-stroke:0;text-stroke:0}
+/* Line-wave effect container */
+.hero-h .line3{display:block;line-height:.88}
+.wave-wrap{
+  display:block;
+  position:relative;
+  height:clamp(90px,12vw,180px);
+  width:100%;
+  margin-top:8px;
+  background:transparent;
+}
+.wave-wrap canvas{
+  display:block;
+  position:absolute;
+  top:0;left:0;
+  width:100%;
+  height:100%;
+  background:transparent;
+}
+/* floating label badge */
+.hero-badge{
+  position:absolute;right:40px;top:0;
+  border:1.5px solid var(--lime);
+  padding:8px 16px;
+  font-family:var(--B);font-size:13px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--lime);
+  transform:rotate(2deg);
+}
+.hero-bottom{
+  display:grid;grid-template-columns:1fr 1fr;
+  border-top:1px solid rgba(255,255,255,.08);
+  margin-top:40px;
+}
+.hero-sub-block{
+  padding:32px 40px;
+  border-right:1px solid rgba(255,255,255,.08);
+}
+.hero-sub-block p{font-size:15px;color:rgba(255,255,255,.5);line-height:1.8;max-width:380px}
+.hero-cta-block{
+  padding:32px 40px;
+  display:flex;align-items:center;gap:20px;flex-wrap:wrap;
+}
+.btn-lime{
+  font-family:var(--B);font-size:20px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;
+  background:var(--lime);color:var(--carbon);
+  padding:14px 40px;display:inline-block;
+}
+.btn-outline{
+  font-family:var(--B);font-size:20px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;
+  border:2px solid rgba(255,255,255,.25);color:var(--white);
+  padding:12px 32px;display:inline-block;
+  transition:border-color .2s,color .2s;
+}
+.btn-outline:hover{border-color:var(--lime);color:var(--lime)}
+
+/* ═══════════════════════════════════════════════════════════════════
+   TICKER BANDE
+═══════════════════════════════════════════════════════════════════ */
+.ticker{
+  background:var(--lime);overflow:hidden;padding:14px 0;
+  border-top:none;border-bottom:none;
+}
+.ticker-track{
+  display:flex;gap:0;width:max-content;
+  animation:tick 18s linear infinite;
+}
+.ticker-track span{
+  font-family:var(--B);font-size:22px;font-weight:800;text-transform:uppercase;
+  color:var(--carbon);letter-spacing:.04em;
+  padding:0 48px;white-space:nowrap;
+}
+.ticker-track span.sep{color:var(--carbon);opacity:.3}
+@keyframes tick{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+@media(prefers-reduced-motion:reduce){.ticker-track{animation:none}}
+
+/* ═══════════════════════════════════════════════════════════════════
+   WIZARD — style bloc graphique
+═══════════════════════════════════════════════════════════════════ */
+.wizard-section{
+  background:var(--carbon2);padding:80px 0;
+  border-top:1px solid rgba(255,255,255,.06);
+}
+.wizard-wrap{display:grid;grid-template-columns:280px 1fr;min-height:420px}
+.wizard-label-col{
+  padding:60px 40px;
+  border-right:1px solid rgba(255,255,255,.08);
+  display:flex;flex-direction:column;justify-content:space-between;
+}
+.wizard-big-label{
+  font-family:var(--B);font-size:clamp(48px,5vw,72px);font-weight:800;
+  text-transform:uppercase;line-height:1;color:var(--lime);
+}
+.wizard-steps-nav{display:flex;flex-direction:column;gap:0;margin-top:auto}
+.wstep{
+  font-size:11px;letter-spacing:.12em;text-transform:uppercase;font-weight:500;
+  color:rgba(255,255,255,.2);padding:10px 0;
+  border-bottom:1px solid rgba(255,255,255,.06);
+  transition:color .2s;
+  display:flex;align-items:center;gap:10px;
+}
+.wstep.active{color:var(--lime)}
+.wstep.done{color:rgba(255,255,255,.4)}
+.wstep-dot{width:6px;height:6px;border-radius:50%;background:currentColor;flex-shrink:0}
+.wizard-main{padding:60px 56px}
+.wizard-q{
+  font-family:var(--B);font-size:clamp(28px,3vw,44px);font-weight:800;
+  text-transform:uppercase;margin-bottom:32px;line-height:1.05;
+}
+.wizard-opts{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:40px}
+.wopt{
+  font-family:var(--B);font-size:18px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;
+  border:2px solid rgba(255,255,255,.15);color:var(--white);
+  padding:10px 24px;cursor:none;transition:all .18s;
+}
+body.touch .wopt{cursor:pointer}
+.wopt:hover{border-color:rgba(198,255,52,.4)}
+.wopt.sel{background:var(--lime);color:var(--carbon);border-color:var(--lime)}
+.wizard-loc{
+  width:100%;max-width:480px;
+  background:transparent;border:2px solid rgba(255,255,255,.15);
+  color:var(--white);font-family:var(--S);font-size:16px;
+  padding:14px 20px;outline:none;transition:border-color .2s;
+}
+.wizard-loc::placeholder{color:rgba(255,255,255,.25)}
+.wizard-loc:focus{border-color:var(--lime)}
+.wizard-actions{display:flex;align-items:center;gap:20px}
+.w-back{
+  font-family:var(--B);font-size:15px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+  color:rgba(255,255,255,.3);transition:color .2s;cursor:none;
+}
+body.touch .w-back{cursor:pointer}
+.w-back:hover{color:var(--white)}
+.w-back:disabled{opacity:0;pointer-events:none}
+.wprogress{height:2px;background:rgba(255,255,255,.06);margin-top:24px;position:relative}
+.wprogress-bar{height:100%;background:var(--lime);transition:width .4s cubic-bezier(.4,0,.2,1)}
+
+/* ═══════════════════════════════════════════════════════════════════
+   STATS — bloc lime plein
+═══════════════════════════════════════════════════════════════════ */
+.stats{background:var(--lime);display:grid;grid-template-columns:repeat(3,1fr)}
+.stat{
+  padding:64px 48px;
+  border-right:1px solid rgba(23,23,23,.15);
+}
+.stat:last-child{border-right:none}
+.stat-n{
+  font-family:var(--B);font-size:clamp(72px,8vw,120px);font-weight:800;
+  color:var(--carbon);line-height:1;letter-spacing:-.02em;
+}
+.stat-l{
+  font-family:var(--B);font-size:16px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+  color:rgba(23,23,23,.55);margin-top:8px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   HOW IT WORKS — blocs alternés
+═══════════════════════════════════════════════════════════════════ */
+.hiw{padding:120px 40px;background:var(--carbon)}
+.hiw-head{
+  display:flex;align-items:flex-end;justify-content:space-between;
+  margin-bottom:72px;gap:40px;flex-wrap:wrap;
+}
+.hiw-title{
+  font-family:var(--B);font-size:clamp(56px,7vw,100px);font-weight:800;
+  text-transform:uppercase;line-height:.9;letter-spacing:-.01em;
+}
+.hiw-title em{color:var(--lime);font-style:normal;display:block}
+.hiw-desc{font-size:14px;color:rgba(255,255,255,.4);max-width:300px;line-height:1.8}
+.hiw-steps{display:grid;grid-template-columns:repeat(3,1fr);gap:0;border:1px solid rgba(255,255,255,.08)}
+.hiw-step{
+  padding:48px 40px;position:relative;
+  border-right:1px solid rgba(255,255,255,.08);
+  opacity:0;transform:translateY(30px);
+  transition:background .3s;
+}
+.hiw-step:last-child{border-right:none}
+.hiw-step:hover{background:var(--carbon2)}
+.hiw-n{
+  font-family:var(--B);font-size:80px;font-weight:800;
+  color:var(--lime);opacity:.12;line-height:1;
+  position:absolute;top:24px;right:28px;
+  transition:opacity .3s;
+}
+.hiw-step:hover .hiw-n{opacity:.22}
+.hiw-step-title{
+  font-family:var(--B);font-size:clamp(24px,2.5vw,36px);font-weight:800;
+  text-transform:uppercase;margin-bottom:14px;margin-top:48px;
+}
+.hiw-step-text{font-size:14px;color:rgba(255,255,255,.45);line-height:1.8}
+
+/* ═══════════════════════════════════════════════════════════════════
+   COACHES — liste éditoriale
+═══════════════════════════════════════════════════════════════════ */
+.coaches{background:var(--carbon);padding:0 0 120px}
+.coaches-head{
+  padding:80px 40px 60px;
+  display:grid;grid-template-columns:1fr auto;align-items:end;
+  gap:40px;border-bottom:1px solid rgba(255,255,255,.08);
+}
+.coaches-title{
+  font-family:var(--B);font-size:clamp(56px,7vw,100px);font-weight:800;
+  text-transform:uppercase;line-height:.9;
+}
+.coaches-title em{color:var(--lime);font-style:normal}
+.coaches-list{display:flex;flex-direction:column;gap:0}
+.coach-row{
+  display:grid;grid-template-columns:80px 1fr auto auto;align-items:center;gap:0;
+  padding:28px 40px;border-bottom:1px solid rgba(255,255,255,.06);
+  transition:background .2s;cursor:none;
+  opacity:0;transform:translateX(-20px);
+}
+body.touch .coach-row{cursor:pointer}
+.coach-row:hover{background:var(--carbon2)}
+.coach-num{font-family:var(--B);font-size:13px;font-weight:700;color:rgba(255,255,255,.2);letter-spacing:.08em}
+.coach-info{padding:0 40px}
+.coach-name{font-family:var(--B);font-size:clamp(24px,2.8vw,40px);font-weight:800;text-transform:uppercase;line-height:1}
+.coach-meta{font-size:12px;color:rgba(255,255,255,.35);letter-spacing:.08em;text-transform:uppercase;margin-top:4px}
+.coach-match-badge{
+  font-family:var(--B);font-size:22px;font-weight:800;color:var(--lime);
+  letter-spacing:.02em;padding:0 40px;border-left:1px solid rgba(255,255,255,.06);
+  white-space:nowrap;
+}
+.coach-cta-cell{padding:0 0 0 40px}
+.coach-img-wrap{
+  width:64px;height:64px;border-radius:50%;overflow:hidden;flex-shrink:0;
+  border:2px solid transparent;transition:border-color .2s;
+}
+.coach-row:hover .coach-img-wrap{border-color:var(--lime)}
+.coach-img-wrap img{width:100%;height:100%;object-fit:cover}
+.coach-badge-ver{
+  font-size:10px;letter-spacing:.1em;text-transform:uppercase;font-weight:500;
+  border:1px solid var(--lime);color:var(--lime);padding:3px 8px;display:inline-block;margin-top:6px;
+}
+.arrow-link{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:44px;height:44px;border:1.5px solid rgba(255,255,255,.15);
+  font-size:20px;color:rgba(255,255,255,.4);
+  transition:border-color .2s,color .2s,background .2s;
+}
+.coach-row:hover .arrow-link{border-color:var(--lime);color:var(--carbon);background:var(--lime)}
+
+/* ═══════════════════════════════════════════════════════════════════
+   MODES — deux blocs côte-à-côte
+═══════════════════════════════════════════════════════════════════ */
+.modes{display:grid;grid-template-columns:1fr 1fr}
+.mode{padding:80px 56px;position:relative;overflow:hidden}
+.mode.a{background:var(--carbon2)}
+.mode.b{background:var(--lime)}
+.mode-tag{
+  font-size:11px;font-weight:500;letter-spacing:.18em;text-transform:uppercase;
+  margin-bottom:20px;display:flex;align-items:center;gap:10px;
+}
+.mode.a .mode-tag{color:var(--lime)}
+.mode.b .mode-tag{color:rgba(23,23,23,.55)}
+.mode-tag::before{content:'';width:24px;height:1px;background:currentColor;display:block}
+.mode-title{
+  font-family:var(--B);font-size:clamp(52px,6vw,88px);font-weight:800;
+  text-transform:uppercase;line-height:.92;margin-bottom:32px;
+  opacity:0;
+}
+.mode.a .mode-title{color:var(--white);transform:translateX(-50px)}
+.mode.b .mode-title{color:var(--carbon);transform:translateX(50px)}
+.mode-list{list-style:none;display:flex;flex-direction:column;gap:12px}
+.mode-list li{
+  font-size:14px;line-height:1.6;
+  display:flex;align-items:flex-start;gap:12px;
+}
+.mode.a .mode-list li{color:rgba(255,255,255,.6)}
+.mode.b .mode-list li{color:rgba(23,23,23,.7)}
+.mode-list li::before{
+  content:'→';font-weight:700;flex-shrink:0;margin-top:1px;
+}
+.mode.a .mode-list li::before{color:var(--lime)}
+.mode.b .mode-list li::before{color:var(--carbon)}
+/* Big background word */
+.mode-bg-word{
+  position:absolute;bottom:-20px;right:-10px;
+  font-family:var(--B);font-size:180px;font-weight:800;text-transform:uppercase;
+  line-height:1;pointer-events:none;user-select:none;
+  opacity:.04;white-space:nowrap;
+}
+.mode.a .mode-bg-word{color:var(--white)}
+.mode.b .mode-bg-word{color:var(--carbon)}
+
+/* ═══════════════════════════════════════════════════════════════════
+   TESTIMONIALS
+═══════════════════════════════════════════════════════════════════ */
+.testi{background:var(--carbon);padding:120px 40px}
+.testi-head{
+  display:grid;grid-template-columns:1fr auto;align-items:end;
+  margin-bottom:60px;gap:24px;
+}
+.testi-title{
+  font-family:var(--B);font-size:clamp(52px,6vw,88px);font-weight:800;
+  text-transform:uppercase;line-height:.9;
+}
+.testi-title em{color:var(--lime);font-style:normal}
+.swiper{padding-bottom:48px !important}
+.tcard{
+  background:var(--carbon2);padding:36px;
+  border:1px solid rgba(255,255,255,.06);
+  transition:border-color .2s;
+}
+.tcard:hover{border-color:rgba(198,255,52,.2)}
+.tcard-stars{color:var(--lime);font-size:16px;letter-spacing:3px;margin-bottom:20px}
+.tcard-text{font-size:15px;line-height:1.8;color:rgba(255,255,255,.7);margin-bottom:28px}
+.tcard-author{display:flex;align-items:center;gap:14px}
+.tcard-avatar{width:44px;height:44px;border-radius:50%;object-fit:cover}
+.tcard-name{font-weight:500;font-size:14px}
+.tcard-role{font-size:12px;color:rgba(255,255,255,.35);margin-top:2px}
+.swiper-pagination-bullet{background:rgba(255,255,255,.2)!important;opacity:1!important}
+.swiper-pagination-bullet-active{background:var(--lime)!important}
+.swiper-button-next,.swiper-button-prev{color:var(--lime)!important}
+.swiper-button-next::after,.swiper-button-prev::after{font-size:16px!important;font-weight:700!important}
+
+/* ═══════════════════════════════════════════════════════════════════
+   CTA FINAL — FULL POSTER
+═══════════════════════════════════════════════════════════════════ */
+.cta-section{
+  background:var(--lime);
+  padding:120px 40px;overflow:hidden;position:relative;
+}
+.cta-bg-text{
+  position:absolute;bottom:-60px;left:-10px;right:-10px;
+  font-family:var(--B);font-size:clamp(120px,18vw,260px);font-weight:800;text-transform:uppercase;
+  line-height:1;color:rgba(23,23,23,.08);white-space:nowrap;pointer-events:none;
+  letter-spacing:-.03em;
+}
+.cta-label{
+  font-size:11px;font-weight:500;letter-spacing:.18em;text-transform:uppercase;
+  color:rgba(23,23,23,.45);margin-bottom:20px;
+  display:flex;align-items:center;gap:10px;
+}
+.cta-label::before{content:'';width:24px;height:1px;background:currentColor;display:block}
+.cta-title{
+  font-family:var(--B);font-size:clamp(64px,10vw,160px);font-weight:800;
+  text-transform:uppercase;line-height:.88;letter-spacing:-.02em;
+  color:var(--carbon);margin-bottom:60px;
+  position:relative;z-index:1;
+}
+.cta-btns{display:flex;align-items:center;gap:16px;flex-wrap:wrap;position:relative;z-index:1}
+.cta-btn-d{
+  font-family:var(--B);font-size:20px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;
+  background:var(--carbon);color:var(--white);padding:16px 48px;
+  transition:background .2s;
+}
+.cta-btn-d:hover{background:#111}
+.cta-btn-o{
+  font-family:var(--B);font-size:20px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;
+  border:2px solid rgba(23,23,23,.4);color:var(--carbon);padding:14px 40px;
+  transition:background .2s,border-color .2s;
+}
+.cta-btn-o:hover{background:rgba(23,23,23,.08)}
+
+/* ═══════════════════════════════════════════════════════════════════
+   FOOTER
+═══════════════════════════════════════════════════════════════════ */
+.footer{background:var(--carbon);padding:80px 40px 40px;border-top:2px solid var(--lime)}
+.footer-top{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:60px;margin-bottom:64px}
+.footer-logo{font-family:var(--B);font-size:40px;font-weight:800;margin-bottom:16px}
+.footer-logo b{color:var(--lime)}
+.footer-tagline{font-size:13px;color:rgba(255,255,255,.35);max-width:240px;line-height:1.8}
+.footer-socials{display:flex;gap:12px;margin-top:24px}
+.footer-soc{
+  width:38px;height:38px;border:1px solid rgba(255,255,255,.1);
+  display:flex;align-items:center;justify-content:center;
+  transition:border-color .2s;
+}
+.footer-soc:hover{border-color:var(--lime)}
+.footer-soc svg{width:15px;height:15px;stroke:rgba(255,255,255,.4);transition:stroke .2s}
+.footer-soc:hover svg{stroke:var(--lime)}
+.footer-col h4{
+  font-family:var(--B);font-size:14px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;
+  margin-bottom:20px;color:rgba(255,255,255,.25);
+}
+.footer-links{list-style:none;display:flex;flex-direction:column;gap:10px}
+.footer-links a{font-size:13px;color:rgba(255,255,255,.45);transition:color .2s}
+.footer-links a:hover{color:var(--lime)}
+.footer-bottom{
+  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;
+  padding-top:32px;border-top:1px solid rgba(255,255,255,.06);
+}
+.footer-bottom p,.footer-bottom a{font-size:12px;color:rgba(255,255,255,.2)}
+.footer-bottom a{transition:color .2s}
+.footer-bottom a:hover{color:var(--lime)}
+.footer-bottom-links{display:flex;gap:20px}
+
+/* ─── RESPONSIVE ─────────────────────────────────────────────────── */
+@media(max-width:1024px){
+  .hero-bottom{grid-template-columns:1fr}
+  .hero-sub-block{border-right:none;border-bottom:1px solid rgba(255,255,255,.08)}
+  .wizard-wrap{grid-template-columns:1fr;display:flex;flex-direction:column}
+  .wizard-label-col{border-right:none;border-bottom:1px solid rgba(255,255,255,.08);padding:40px;flex-direction:row;align-items:center;justify-content:space-between}
+  .wizard-steps-nav{flex-direction:row;margin-top:0;gap:0}
+  .wstep{border-bottom:none;border-right:1px solid rgba(255,255,255,.06);padding:8px 16px}
+  .wstep:last-child{border-right:none}
+  .wizard-big-label{font-size:40px}
+  .coaches-head{grid-template-columns:1fr}
+  .coach-row{grid-template-columns:56px 1fr auto;gap:0}
+  .coach-match-badge{display:none}
+  .coach-cta-cell{padding-left:0}
+  .footer-top{grid-template-columns:1fr 1fr;gap:40px}
+}
+@media(max-width:768px){
+  .nav{padding:14px 20px}
+  .nav-r .nav-link,.nav-r .nav-cta{display:none}
+  .burger{display:flex}
+  .hero{padding-top:70px}
+  .hero-top{padding:32px 20px 0}
+  .hero-badge{display:none}
+  .hero-h{font-size:clamp(52px,16vw,90px)}
+  .hero-bottom{grid-template-columns:1fr}
+  .hero-sub-block,.hero-cta-block{padding:24px 20px}
+  .hero-sub-block{border-right:none;border-bottom:1px solid rgba(255,255,255,.08)}
+  .ticker-track span{font-size:18px;padding:0 32px}
+  .wizard-label-col{flex-direction:column;align-items:flex-start;gap:20px;padding:32px 20px}
+  .wizard-steps-nav{width:100%;flex-wrap:wrap}
+  .wizard-main{padding:40px 20px}
+  .stats{grid-template-columns:1fr}
+  .stat{border-right:none;border-bottom:1px solid rgba(23,23,23,.12);padding:48px 24px}
+  .hiw{padding:80px 20px}
+  .hiw-head{flex-direction:column;align-items:flex-start}
+  .hiw-steps{grid-template-columns:1fr}
+  .hiw-step{border-right:none;border-bottom:1px solid rgba(255,255,255,.08)}
+  .coaches{padding-bottom:80px}
+  .coaches-head{padding:60px 20px 40px}
+  .coach-row{padding:20px;grid-template-columns:48px 1fr 44px;gap:0}
+  .coach-info{padding:0 16px}
+  .coach-name{font-size:22px}
+  .modes{grid-template-columns:1fr}
+  .mode{padding:60px 24px}
+  .mode-bg-word{font-size:100px}
+  .testi{padding:80px 20px}
+  .testi-head{grid-template-columns:1fr}
+  .cta-section{padding:80px 20px}
+  .cta-title{font-size:clamp(52px,14vw,88px)}
+  .cta-btns{flex-direction:column;width:100%}
+  .cta-btn-d,.cta-btn-o{width:100%;text-align:center}
+  .footer{padding:60px 20px 32px}
+  .footer-top{grid-template-columns:1fr;gap:32px}
+  .footer-bottom{flex-direction:column;align-items:flex-start}
+}
+
+/* ─── MAG ZONE ───────────────────────────────────────────────────── */
+.mz{position:relative;display:inline-block}
+</style>
+</head>
+<body>
+
+<div id="cd"></div>
+<div id="cr"></div>
+
+<!-- MOB NAV -->
+<div class="mob-nav" id="mobNav" aria-hidden="true">
+  <a href="#hiw" onclick="closeNav()">Comment ça marche</a>
+  <a href="/recherche.html" onclick="closeNav()">Coachs</a>
+  <a href="#testi" onclick="closeNav()">Témoignages</a>
+  <a href="/onboarding-sportif.html" onclick="closeNav()">Trouver mon coach</a>
+</div>
+
+<!-- NAVBAR -->
+<header class="nav" id="navbar">
+  <a href="#" class="logo" aria-label="SKARP">SKARP<b>.</b></a>
+  <div class="nav-r">
+    <a class="nav-link" href="#hiw">Comment ça marche</a>
+    <a class="nav-link" href="/recherche.html">Coachs</a>
+    <a class="nav-link" href="#testi">Témoignages</a>
+    <div class="mz">
+      <a href="/onboarding-sportif.html" class="nav-cta mag-btn">Trouver mon coach</a>
+    </div>
+  </div>
+  <button class="burger" id="burgerBtn" aria-label="Menu" aria-expanded="false">
+    <span></span><span></span><span></span>
+  </button>
+</header>
+
+<div id="sw"><div id="sc">
+
+<!-- ═══ HERO ═══════════════════════════════════════════════════════ -->
+<section class="hero" aria-label="Héro">
+  <div class="hero-top">
+    <p class="hero-eyebrow">Marketplace de coaching sportif</p>
+    <h1 class="hero-h">
+      <span class="line1">Trouve</span>
+      <span class="line2">ton coach.</span>
+      <div class="line3 wave-wrap" id="waveWrap"></div>
+    </h1>
+    <div class="hero-badge" aria-hidden="true">Beta FR 2025</div>
+  </div>
+  <div class="hero-bottom">
+    <div class="hero-sub-block">
+      <p>La marketplace française qui connecte les sportifs ambitieux aux coachs certifiés. Matching par sport, objectif et mode de coaching.</p>
+    </div>
+    <div class="hero-cta-block">
+      <div class="mz">
+        <a href="/onboarding-sportif.html" class="btn-lime mag-btn">Trouver mon coach →</a>
+      </div>
+      <div class="mz">
+        <a href="#hiw" class="btn-outline mag-btn">Voir comment ça marche</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ TICKER ══════════════════════════════════════════════════════ -->
+<div class="ticker" aria-hidden="true">
+  <div class="ticker-track">
+    <span>Rugby</span><span class="sep">—</span>
+    <span>Musculation</span><span class="sep">—</span>
+    <span>Running</span><span class="sep">—</span>
+    <span>Natation</span><span class="sep">—</span>
+    <span>Football</span><span class="sep">—</span>
+    <span>Cyclisme</span><span class="sep">—</span>
+    <span>Boxe</span><span class="sep">—</span>
+    <span>Crossfit</span><span class="sep">—</span>
+    <span>Yoga</span><span class="sep">—</span>
+    <span>Triathlon</span><span class="sep">—</span>
+    <span>Rugby</span><span class="sep">—</span>
+    <span>Musculation</span><span class="sep">—</span>
+    <span>Running</span><span class="sep">—</span>
+    <span>Natation</span><span class="sep">—</span>
+    <span>Football</span><span class="sep">—</span>
+    <span>Cyclisme</span><span class="sep">—</span>
+    <span>Boxe</span><span class="sep">—</span>
+    <span>Crossfit</span><span class="sep">—</span>
+    <span>Yoga</span><span class="sep">—</span>
+    <span>Triathlon</span><span class="sep">—</span>
+  </div>
+</div>
+
+<!-- ═══ WIZARD ══════════════════════════════════════════════════════ -->
+<section class="wizard-section" id="wizard" aria-label="Trouver mon coach">
+  <div class="wizard-wrap">
+    <div class="wizard-label-col">
+      <div class="wizard-big-label" id="wzBigLabel">01</div>
+      <div class="wizard-steps-nav" role="tablist">
+        <div class="wstep active" data-i="0"><span class="wstep-dot"></span>Sport</div>
+        <div class="wstep" data-i="1"><span class="wstep-dot"></span>Objectif</div>
+        <div class="wstep" data-i="2"><span class="wstep-dot"></span>Mode</div>
+        <div class="wstep" data-i="3"><span class="wstep-dot"></span>Ville</div>
+      </div>
+    </div>
+    <div class="wizard-main">
+      <div id="wzContent"></div>
+      <div class="wprogress"><div class="wprogress-bar" id="wzBar" style="width:25%"></div></div>
+      <div class="wizard-actions" style="margin-top:28px">
+        <button class="w-back" id="wzBack" disabled>← Retour</button>
+        <div class="mz">
+          <button class="btn-lime mag-btn" id="wzNext">Suivant →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ STATS ════════════════════════════════════════════════════════ -->
+<section class="stats" aria-label="Chiffres clés">
+  <div class="stat">
+    <div class="stat-n" data-target="150" data-suffix="+">0</div>
+    <div class="stat-l">Coachs certifiés</div>
+  </div>
+  <div class="stat">
+    <div class="stat-n" data-target="2000" data-suffix="+">0</div>
+    <div class="stat-l">Sportifs accompagnés</div>
+  </div>
+  <div class="stat">
+    <div class="stat-n" data-target="12" data-suffix="">0</div>
+    <div class="stat-l">Sports couverts</div>
+  </div>
+</section>
+
+<!-- ═══ HOW IT WORKS ═════════════════════════════════════════════════ -->
+<section class="hiw" id="hiw" aria-label="Comment ça marche">
+  <div class="hiw-head">
+    <h2 class="hiw-title">Simple.<br><em>Efficace.</em></h2>
+    <p class="hiw-desc">Trois étapes et tu es en séance avec le coach qui te correspond vraiment.</p>
+  </div>
+  <div class="hiw-steps">
+    <div class="hiw-step" tabindex="0">
+      <div class="hiw-n" aria-hidden="true">01</div>
+      <h3 class="hiw-step-title">Filtre ton profil</h3>
+      <p class="hiw-step-text">Sport, objectif, mode de coaching. Notre moteur de matching affine ta recherche pour ne te montrer que les coachs qui te correspondent vraiment.</p>
+    </div>
+    <div class="hiw-step" tabindex="0">
+      <div class="hiw-n" aria-hidden="true">02</div>
+      <h3 class="hiw-step-title">On matche</h3>
+      <p class="hiw-step-text">Le score SKARP t'indique la compatibilité avec chaque coach. Consulte les profils, les avis certifiés, et choisis en toute confiance.</p>
+    </div>
+    <div class="hiw-step" tabindex="0">
+      <div class="hiw-n" aria-hidden="true">03</div>
+      <h3 class="hiw-step-title">Tu progresses</h3>
+      <p class="hiw-step-text">Réserve ta première séance, suis tes objectifs et mesure tes progrès. En distanciel ou présentiel, ton coach t'accompagne à chaque étape.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ COACHES ═══════════════════════════════════════════════════════ -->
+<section class="coaches" id="coaches" aria-label="Coachs mis en avant">
+  <div class="coaches-head">
+    <h2 class="coaches-title">Des experts<br><em>certifiés.</em></h2>
+    <div class="mz">
+      <a href="/recherche.html" class="btn-lime mag-btn">Voir tous les coachs</a>
+    </div>
+  </div>
+  <div class="coaches-list">
+    <article class="coach-row" tabindex="0" aria-label="Coach Karim — Rugby · Performance">
+      <div class="coach-img-wrap">
+        <img src="https://images.unsplash.com/photo-1571731956672-f2b94d7dd0cb?w=200&q=80" alt="Karim M." width="64" height="64" loading="lazy">
+      </div>
+      <div class="coach-info">
+        <div class="coach-name">Karim M.</div>
+        <div class="coach-meta">Rugby · Performance · Paris</div>
+        <div class="coach-badge-ver">Diplôme vérifié</div>
+      </div>
+      <div class="coach-match-badge" aria-label="Score matching 96%">96% match</div>
+      <div class="coach-cta-cell">
+        <span class="arrow-link" aria-label="Voir le profil de Karim">→</span>
+      </div>
+    </article>
+    <article class="coach-row" tabindex="0" aria-label="Coach Sarah — Running · Endurance">
+      <div class="coach-img-wrap">
+        <img src="https://images.unsplash.com/photo-1594381898411-846e7d193883?w=200&q=80" alt="Sarah L." width="64" height="64" loading="lazy">
+      </div>
+      <div class="coach-info">
+        <div class="coach-name">Sarah L.</div>
+        <div class="coach-meta">Running · Endurance · Lyon</div>
+        <div class="coach-badge-ver">Diplôme vérifié</div>
+      </div>
+      <div class="coach-match-badge" aria-label="Score matching 94%">94% match</div>
+      <div class="coach-cta-cell">
+        <span class="arrow-link" aria-label="Voir le profil de Sarah">→</span>
+      </div>
+    </article>
+    <article class="coach-row" tabindex="0" aria-label="Coach Marc — Musculation · Force">
+      <div class="coach-img-wrap">
+        <img src="https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?w=200&q=80" alt="Marc T." width="64" height="64" loading="lazy">
+      </div>
+      <div class="coach-info">
+        <div class="coach-name">Marc T.</div>
+        <div class="coach-meta">Musculation · Force · Bordeaux</div>
+        <div class="coach-badge-ver">Diplôme vérifié</div>
+      </div>
+      <div class="coach-match-badge" aria-label="Score matching 91%">91% match</div>
+      <div class="coach-cta-cell">
+        <span class="arrow-link" aria-label="Voir le profil de Marc">→</span>
+      </div>
+    </article>
+    <article class="coach-row" tabindex="0" aria-label="Coach Léa — Natation · Technique">
+      <div class="coach-img-wrap">
+        <img src="https://images.unsplash.com/photo-1530549387789-4c1017266635?w=200&q=80" alt="Léa R." width="64" height="64" loading="lazy">
+      </div>
+      <div class="coach-info">
+        <div class="coach-name">Léa R.</div>
+        <div class="coach-meta">Natation · Technique · Marseille</div>
+        <div class="coach-badge-ver">Diplôme vérifié</div>
+      </div>
+      <div class="coach-match-badge" aria-label="Score matching 98%">98% match</div>
+      <div class="coach-cta-cell">
+        <span class="arrow-link" aria-label="Voir le profil de Léa">→</span>
+      </div>
+    </article>
+    <article class="coach-row" tabindex="0" aria-label="Coach Jules — Cyclisme · Endurance">
+      <div class="coach-img-wrap">
+        <img src="https://images.unsplash.com/photo-1534367610401-9f5ed68180aa?w=200&q=80" alt="Jules D." width="64" height="64" loading="lazy">
+      </div>
+      <div class="coach-info">
+        <div class="coach-name">Jules D.</div>
+        <div class="coach-meta">Cyclisme · Endurance · Toulouse</div>
+        <div class="coach-badge-ver">Diplôme vérifié</div>
+      </div>
+      <div class="coach-match-badge" aria-label="Score matching 89%">89% match</div>
+      <div class="coach-cta-cell">
+        <span class="arrow-link" aria-label="Voir le profil de Jules">→</span>
+      </div>
+    </article>
+  </div>
+</section>
+
+<!-- ═══ MODES ═════════════════════════════════════════════════════════ -->
+<section class="modes" aria-label="Distanciel vs Présentiel">
+  <div class="mode a" id="modeA">
+    <div class="mode-tag">En ligne</div>
+    <h2 class="mode-title">Distan-<br>ciel.</h2>
+    <ul class="mode-list">
+      <li>Flexibilité totale d'horaires</li>
+      <li>Accès à tous les coachs France</li>
+      <li>Suivi vidéo en temps réel</li>
+      <li>Programmes personnalisés</li>
+      <li>Messagerie directe coach</li>
+    </ul>
+    <div class="mode-bg-word" aria-hidden="true">ONLINE</div>
+  </div>
+  <div class="mode b" id="modeB">
+    <div class="mode-tag">En personne</div>
+    <h2 class="mode-title">Présen-<br>tiel.</h2>
+    <ul class="mode-list">
+      <li>Correction technique directe</li>
+      <li>Motivation maximale en présence</li>
+      <li>Accès aux équipements du coach</li>
+      <li>Séances découverte disponibles</li>
+      <li>Géolocalisation des coachs proches</li>
+    </ul>
+    <div class="mode-bg-word" aria-hidden="true">IRL</div>
+  </div>
+</section>
+
+<!-- ═══ TESTIMONIALS ══════════════════════════════════════════════════ -->
+<section class="testi" id="testi" aria-label="Témoignages">
+  <div class="testi-head">
+    <h2 class="testi-title">Ils ont<br><em>progressé.</em></h2>
+    <div class="mz">
+      <a href="/recherche.html" class="btn-lime mag-btn" style="white-space:nowrap">Rejoindre →</a>
+    </div>
+  </div>
+  <div class="swiper ts-swiper">
+    <div class="swiper-wrapper">
+      <div class="swiper-slide">
+        <div class="tcard">
+          <div class="tcard-stars" aria-label="5 étoiles">★★★★★</div>
+          <p class="tcard-text">"En 3 mois avec mon coach SKARP, j'ai amélioré mon chrono de 10 km de 8 minutes. Le matching est bluffant — j'aurais jamais trouvé Karim tout seul."</p>
+          <div class="tcard-author">
+            <img class="tcard-avatar" src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&q=80" alt="Thomas D." width="44" height="44" loading="lazy">
+            <div><div class="tcard-name">Thomas D.</div><div class="tcard-role">Runner amateur, Lyon</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="swiper-slide">
+        <div class="tcard">
+          <div class="tcard-stars" aria-label="5 étoiles">★★★★★</div>
+          <p class="tcard-text">"Après des années à faire n'importe quoi en salle, ma coach SKARP m'a structuré une vraie progression. Prise de masse propre, technique irréprochable."</p>
+          <div class="tcard-author">
+            <img class="tcard-avatar" src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&q=80" alt="Antoine B." width="44" height="44" loading="lazy">
+            <div><div class="tcard-name">Antoine B.</div><div class="tcard-role">Sportif loisir, Paris</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="swiper-slide">
+        <div class="tcard">
+          <div class="tcard-stars" aria-label="5 étoiles">★★★★★</div>
+          <p class="tcard-text">"Je voulais reprendre le sport après une blessure. SKARP m'a mis en relation avec une coach spécialisée en réathlétisation. Résultat : je cours à nouveau."</p>
+          <div class="tcard-author">
+            <img class="tcard-avatar" src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&q=80" alt="Marie C." width="44" height="44" loading="lazy">
+            <div><div class="tcard-name">Marie C.</div><div class="tcard-role">Sportive en reprise, Bordeaux</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="swiper-slide">
+        <div class="tcard">
+          <div class="tcard-stars" aria-label="5 étoiles">★★★★★</div>
+          <p class="tcard-text">"Le distanciel avec SKARP c'est top : mon coach me suit en temps réel, corrige mes postures via caméra. Aussi efficace qu'en présentiel, sans les contraintes."</p>
+          <div class="tcard-author">
+            <img class="tcard-avatar" src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&q=80" alt="Lucas M." width="44" height="44" loading="lazy">
+            <div><div class="tcard-name">Lucas M.</div><div class="tcard-role">Télétravailleur actif, Toulouse</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="swiper-pagination"></div>
+    <div class="swiper-button-prev" aria-label="Précédent"></div>
+    <div class="swiper-button-next" aria-label="Suivant"></div>
+  </div>
+</section>
+
+<!-- ═══ CTA FINAL ═════════════════════════════════════════════════════ -->
+<section class="cta-section" aria-label="Appel à l'action final">
+  <div class="cta-bg-text" aria-hidden="true">SKARP</div>
+  <p class="cta-label">Rejoins SKARP</p>
+  <h2 class="cta-title" id="ctaFinalTitle">Prêt à passer<br>au niveau<br>supérieur ?</h2>
+  <div class="cta-btns">
+    <div class="mz">
+      <a href="/onboarding-sportif.html" class="cta-btn-d mag-btn">Trouver mon coach</a>
+    </div>
+    <div class="mz">
+      <a href="#hiw" class="cta-btn-o mag-btn">En savoir plus</a>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ FOOTER ════════════════════════════════════════════════════════ -->
+<footer class="footer">
+  <div class="footer-top">
+    <div>
+      <div class="footer-logo">SKARP<b>.</b></div>
+      <p class="footer-tagline">La marketplace française qui connecte les sportifs aux meilleurs coachs certifiés.</p>
+      <div class="footer-socials">
+        <a class="footer-soc" href="#" aria-label="Instagram">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r=".5" fill="currentColor" stroke="none"/></svg>
+        </a>
+        <a class="footer-soc" href="#" aria-label="TikTok">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5"/></svg>
+        </a>
+        <a class="footer-soc" href="#" aria-label="LinkedIn">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="2" width="20" height="20" rx="2"/><path d="M7 10v8M7 7v.01M12 10v8M12 14a4 4 0 0 1 8 0v4"/></svg>
+        </a>
+      </div>
+    </div>
+    <div class="footer-col">
+      <h4>Sportifs</h4>
+      <ul class="footer-links">
+        <li><a href="/onboarding-sportif.html">Trouver un coach</a></li>
+        <li><a href="#hiw">Comment ça marche</a></li>
+        <li><a href="#testi">Témoignages</a></li>
+        <li><a href="#">FAQ</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Coachs</h4>
+      <ul class="footer-links">
+        <li><a href="#">Devenir coach</a></li>
+        <li><a href="#">Conditions partenaires</a></li>
+        <li><a href="#">Certification</a></li>
+        <li><a href="#">Blog</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>SKARP</h4>
+      <ul class="footer-links">
+        <li><a href="#">À propos</a></li>
+        <li><a href="#">Presse</a></li>
+        <li><a href="#">Careers</a></li>
+        <li><a href="#">Contact</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <p>© 2025 SKARP SAS. Tous droits réservés.</p>
+    <div class="footer-bottom-links">
+      <a href="#">Mentions légales</a>
+      <a href="#">Confidentialité</a>
+      <a href="#">CGU</a>
+    </div>
+  </div>
+</footer>
+
+</div></div><!-- #sc #sw -->
+
+<!-- ─── CDN ───────────────────────────────────────────────────────── -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+
+<script>
+/* ═══════════════════════════════════════════════════════════════════
+   SKARP JS — Bold Edition
+═══════════════════════════════════════════════════════════════════ */
+const isTouch = ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
+if(isTouch) document.body.classList.add('touch');
+const noMotion = window.matchMedia('(prefers-reduced-motion:reduce)').matches;
+
+/* ─── CURSOR ─────────────────────────────────────────────────────── */
+if(!isTouch){
+  const cd = document.getElementById('cd');
+  const cr = document.getElementById('cr');
+  const qx = gsap.quickTo(cr,'x',{duration:.14,ease:'none'});
+  const qy = gsap.quickTo(cr,'y',{duration:.14,ease:'none'});
+  document.addEventListener('mousemove',e=>{
+    gsap.set(cd,{x:e.clientX,y:e.clientY});
+    qx(e.clientX);qy(e.clientY);
+  });
+  document.querySelectorAll('a,button,.coach-row,.wopt,.hiw-step').forEach(el=>{
+    el.addEventListener('mouseenter',()=>{cd.classList.add('h');cr.classList.add('h')});
+    el.addEventListener('mouseleave',()=>{cd.classList.remove('h');cr.classList.remove('h')});
+  });
+}
+
+/* ─── GSAP PLUGINS ───────────────────────────────────────────────── */
+gsap.registerPlugin(ScrollTrigger);
+
+/* ─── NAVBAR ─────────────────────────────────────────────────────── */
+const navbar = document.getElementById('navbar');
+ScrollTrigger.create({
+  start:'top -60px',
+  onUpdate:s=>navbar.classList.toggle('on',s.progress>0),
+});
+
+/* ─── BURGER ─────────────────────────────────────────────────────── */
+const burgerBtn = document.getElementById('burgerBtn');
+const mobNav = document.getElementById('mobNav');
+let navOpen=false;
+burgerBtn.addEventListener('click',()=>{
+  navOpen=!navOpen;
+  mobNav.classList.toggle('open',navOpen);
+  mobNav.setAttribute('aria-hidden',String(!navOpen));
+  burgerBtn.setAttribute('aria-expanded',String(navOpen));
+  const sp = burgerBtn.querySelectorAll('span');
+  if(navOpen){
+    gsap.to(sp[0],{rotate:45,y:7,duration:.28});
+    gsap.to(sp[1],{opacity:0,duration:.2});
+    gsap.to(sp[2],{rotate:-45,y:-7,duration:.28});
+  } else {
+    gsap.to(sp,{rotate:0,y:0,opacity:1,duration:.28});
+  }
+});
+function closeNav(){
+  navOpen=false;mobNav.classList.remove('open');
+  mobNav.setAttribute('aria-hidden','true');
+  burgerBtn.setAttribute('aria-expanded','false');
+  gsap.to(burgerBtn.querySelectorAll('span'),{rotate:0,y:0,opacity:1,duration:.28});
+}
+window.closeNav=closeNav;
+
+/* ─── HERO HEADLINE ANIM ─────────────────────────────────────────── */
+if(!noMotion){
+  // line3 (wave-wrap) excluded — canvas handles its own reveal
+  const lines = document.querySelectorAll('.hero-h .line1,.hero-h .line2');
+  gsap.from(lines,{
+    y:'110%',opacity:0,duration:.9,ease:'power4.out',stagger:.12,delay:.1,
+    clipPath:'inset(0 0 100% 0)',
+  });
+  gsap.from('.hero-eyebrow',{opacity:0,y:10,duration:.6,ease:'power2.out',delay:.6});
+  gsap.from('.hero-sub-block p',{opacity:0,y:20,duration:.6,ease:'power2.out',delay:.8});
+  gsap.from('.hero-cta-block .btn-lime,.hero-cta-block .btn-outline',{
+    opacity:0,y:20,duration:.5,ease:'power2.out',stagger:.1,delay:1,
+  });
+  gsap.from('.hero-badge',{opacity:0,duration:.5,ease:'back.out(1.7)',delay:1.2});
+}
+
+/* ─── HIW CARDS ──────────────────────────────────────────────────── */
+if(!noMotion){
+  document.querySelectorAll('.hiw-step').forEach((el,i)=>{
+    ScrollTrigger.create({
+      trigger:el,start:'top 88%',once:true,
+      onEnter(){ gsap.to(el,{opacity:1,y:0,duration:.65,ease:'power3.out',delay:i*.1}) }
+    });
+  });
+}
+
+/* ─── COACHES LIST ───────────────────────────────────────────────── */
+if(!noMotion){
+  document.querySelectorAll('.coach-row').forEach((el,i)=>{
+    ScrollTrigger.create({
+      trigger:el,start:'top 90%',once:true,
+      onEnter(){ gsap.to(el,{opacity:1,x:0,duration:.55,ease:'power3.out',delay:i*.07}) }
+    });
+  });
+}
+
+/* ─── MODES ──────────────────────────────────────────────────────── */
+if(!noMotion){
+  gsap.to('#modeA .mode-title',{
+    opacity:1,x:0,duration:.8,ease:'power3.out',
+    scrollTrigger:{trigger:'#modeA',start:'top 75%',once:true}
+  });
+  gsap.to('#modeB .mode-title',{
+    opacity:1,x:0,duration:.8,ease:'power3.out',
+    scrollTrigger:{trigger:'#modeB',start:'top 75%',once:true}
+  });
+}
+
+/* ─── STATS COUNTER ──────────────────────────────────────────────── */
+ScrollTrigger.create({
+  trigger:'.stats',start:'top 80%',once:true,
+  onEnter(){
+    document.querySelectorAll('.stat-n').forEach(el=>{
+      const t=parseInt(el.dataset.target),s=el.dataset.suffix||'',v={n:0};
+      gsap.to(v,{n:t,duration:2,ease:'power2.out',
+        onUpdate(){ el.textContent=Math.floor(v.n).toLocaleString('fr-FR')+s }
+      });
+    });
+  }
+});
+
+/* ─── CTA ANIM ───────────────────────────────────────────────────── */
+if(!noMotion){
+  gsap.from('#ctaFinalTitle',{
+    opacity:0,y:40,duration:.8,ease:'power3.out',
+    scrollTrigger:{trigger:'#ctaFinalTitle',start:'top 80%',once:true}
+  });
+}
+
+/* ─── MAGNETIC BUTTONS ───────────────────────────────────────────── */
+if(!isTouch){
+  document.querySelectorAll('.mz').forEach(zone=>{
+    const btn = zone.querySelector('.mag-btn,.btn-lime,.btn-outline,.nav-cta,.cta-btn-d,.cta-btn-o');
+    if(!btn) return;
+    zone.addEventListener('mousemove',e=>{
+      const r=zone.getBoundingClientRect();
+      const x=gsap.utils.mapRange(r.left,r.right,-r.width/2,r.width/2,e.clientX);
+      const y=gsap.utils.mapRange(r.top,r.bottom,-r.height/2,r.height/2,e.clientY);
+      gsap.to(btn,{x:x*.3,y:y*.3,duration:.4,ease:'power2.out',overwrite:true});
+    });
+    zone.addEventListener('mouseleave',()=>{
+      gsap.to(btn,{x:0,y:0,duration:.7,ease:'elastic.out(1,.4)',overwrite:true});
+    });
+  });
+}
+
+/* ─── WIZARD ─────────────────────────────────────────────────────── */
+const wzData=[
+  {q:'Quel sport pratiques-tu ?',key:'sport',opts:['Rugby','Football','Musculation','Running','Natation','Cyclisme','Boxe','Autre']},
+  {q:'Quel est ton objectif ?',key:'objectif',opts:['Prépa intersaison','Prise de masse','Perte de poids','Remise en forme','Performance','Réathlétisation']},
+  {q:'Mode de coaching ?',key:'mode',opts:['Distanciel','Présentiel','Les deux']},
+  {q:'Ta ville ou code postal',key:'loc',type:'text',placeholder:'Ex : Paris, Lyon, 69000…'},
+];
+const wzSels={};
+let wzStep=0;
+const wzContent=document.getElementById('wzContent');
+const wzNext=document.getElementById('wzNext');
+const wzBack=document.getElementById('wzBack');
+const wzBar=document.getElementById('wzBar');
+const wzBigLabel=document.getElementById('wzBigLabel');
+const wStepEls=document.querySelectorAll('.wstep');
+
+function wzRender(step){
+  const d=wzData[step];
+  let h=`<p class="wizard-q">${d.q}</p>`;
+  if(d.type==='text'){
+    h+=`<input class="wizard-loc" type="text" placeholder="${d.placeholder||''}" value="${wzSels[d.key]||''}" id="wzLoc" autocomplete="postal-code">`;
+    wzNext.textContent='Trouver mes coachs →';
+  } else {
+    h+=`<div class="wizard-opts" role="group" aria-label="${d.q}">`;
+    d.opts.forEach(o=>{
+      const s=wzSels[d.key]===o?' sel':'';
+      h+=`<button class="wopt mag-btn${s}" data-v="${o}" type="button">${o}</button>`;
+    });
+    h+='</div>';
+    wzNext.textContent=step<wzData.length-1?'Suivant →':'Trouver mes coachs →';
+  }
+  wzContent.innerHTML=h;
+  wzContent.querySelectorAll('.wopt').forEach(b=>{
+    b.addEventListener('click',()=>{
+      wzContent.querySelectorAll('.wopt').forEach(x=>x.classList.remove('sel'));
+      b.classList.add('sel');wzSels[d.key]=b.dataset.v;
+    });
+  });
+  const li=document.getElementById('wzLoc');
+  if(li) li.addEventListener('input',e=>{wzSels[d.key]=e.target.value});
+  wzBar.style.width=((step+1)/wzData.length*100)+'%';
+  wzBigLabel.textContent='0'+(step+1);
+  wStepEls.forEach((el,i)=>{
+    el.classList.toggle('active',i===step);
+    el.classList.toggle('done',i<step);
+    el.setAttribute('aria-selected',String(i===step));
+  });
+  wzBack.disabled=step===0;
+  if(!noMotion) gsap.from(wzContent,{opacity:0,y:16,duration:.3,ease:'power2.out'});
+}
+
+wzNext.addEventListener('click',()=>{
+  if(wzStep<wzData.length-1){wzStep++;wzRender(wzStep);}
+  else {
+    const s=wzSels;
+    alert(`🎯 Recherche lancée !\n\nSport : ${s.sport||'—'}\nObjectif : ${s.objectif||'—'}\nMode : ${s.mode||'—'}\nVille : ${s.loc||'—'}\n\nFonctionnalité de matching en cours de déploiement.`);
+  }
+});
+wzBack.addEventListener('click',()=>{if(wzStep>0){wzStep--;wzRender(wzStep);}});
+wzRender(0);
+
+/* ─── SWIPER ─────────────────────────────────────────────────────── */
+new Swiper('.ts-swiper',{
+  slidesPerView:1,spaceBetween:20,loop:true,
+  autoplay:{delay:4500,pauseOnMouseEnter:true,disableOnInteraction:false},
+  pagination:{el:'.swiper-pagination',clickable:true},
+  navigation:{nextEl:'.swiper-button-next',prevEl:'.swiper-button-prev'},
+  breakpoints:{768:{slidesPerView:2},1100:{slidesPerView:3}},
+  a11y:{prevSlideMessage:'Témoignage précédent',nextSlideMessage:'Témoignage suivant'},
+});
+
+/* ─── REDUCED MOTION FALLBACK ────────────────────────────────────── */
+if(noMotion){
+  document.querySelectorAll('.hiw-step,.coach-row,.mode-title').forEach(el=>{
+    el.style.opacity='1';el.style.transform='none';
+  });
+}
+
+/* ─── WAVE TEXT EFFECT — "DÉPASSE-TOI." ─────────────────────────── */
+(function(){
+  const wrapper = document.getElementById('waveWrap');
+  if(!wrapper) return;
+
+  const canvas = document.createElement('canvas');
+  wrapper.appendChild(canvas);
+
+  const mouse = { x: -9999, y: -9999 };
+  const lines = [];
+  let ctx;
+
+  const STROKE_COLOR = '#C6FF34';
+  const TEXT = 'DÉPASSE-TOI.';
+
+  const buildWave = () => {
+    const dpr = window.devicePixelRatio || 1;
+    const W   = wrapper.offsetWidth  || window.innerWidth;
+    const H   = wrapper.offsetHeight || 120;
+    canvas.width  = W * dpr;
+    canvas.height = H * dpr;
+    ctx.setTransform(1,0,0,1,0,0);
+    ctx.scale(dpr, dpr);
+
+    /* ── sample text into tiny offscreen canvas ──
+       Use Impact: always available, bold, condensed — perfect for this effect */
+    const TW = 600, TH = 100;
+    const tc  = document.createElement('canvas');
+    tc.width  = TW; tc.height = TH;
+    const tx  = tc.getContext('2d');
+    tx.fillStyle = '#000';
+    tx.fillRect(0,0,TW,TH);
+    tx.fillStyle = '#fff';
+    /* auto-fit font size so text fills width */
+    let fs = TH * 0.80;
+    tx.font = `${fs}px Impact, "Arial Black", sans-serif`;
+    while(tx.measureText(TEXT).width > TW * 0.95 && fs > 10) {
+      fs -= 1;
+      tx.font = `${fs}px Impact, "Arial Black", sans-serif`;
+    }
+    tx.textBaseline = 'middle';
+    tx.textAlign    = 'center';
+    tx.fillText(TEXT, TW/2, TH/2);
+    const pxData = tx.getImageData(0,0,TW,TH).data;
+
+    /* ── build line grid ── */
+    const vPad  = H * 0.06;
+    const count = 22;
+    const lH    = (H - vPad*2) / count;
+    const cW    = 4;
+    const cols  = Math.floor(W / cW);
+    const AMP   = lH * 2.2;
+
+    lines.length = 0;
+    for(let i=0; i<count; i++){
+      const y   = vPad + i * lH;
+      const row = [];
+      for(let j=0; j<cols; j++){
+        const x   = j * cW;
+        const tX  = Math.floor((j/cols)*TW);
+        const tY  = Math.floor((i/count)*TH);
+        const idx = (tY*TW + tX) * 4;
+        const bri = pxData[idx] || 0;
+        const off = (bri/255) * AMP;
+        const fy  = y - off;
+        row.push({ x, y:fy, bx:x, by:fy });
+      }
+      lines.push(row);
+    }
+  };
+
+  const update = () => {
+    const R=120, SPD=12;
+    lines.forEach(row => row.forEach(p => {
+      const dx = p.x - mouse.x;
+      const dy = p.y - mouse.y;
+      const d  = Math.sqrt(dx*dx + dy*dy);
+      if(d < R){
+        const a = Math.atan2(dy,dx);
+        const f = (R-d)/R;
+        p.x += Math.cos(a)*f*SPD;
+        p.y += Math.sin(a)*f*SPD;
+      }
+      p.x += (p.bx - p.x) * 0.1;
+      p.y += (p.by - p.y) * 0.1;
+    }));
+  };
+
+  const draw = () => {
+    const W = canvas.width  / (window.devicePixelRatio||1);
+    const H = canvas.height / (window.devicePixelRatio||1);
+    ctx.clearRect(0,0,W,H);
+    lines.forEach(row => {
+      ctx.beginPath();
+      ctx.moveTo(row[0].x, row[0].y);
+      for(let i=1; i<row.length; i++){
+        const p = row[i-1], c = row[i];
+        ctx.quadraticCurveTo(p.x, p.y, (p.x+c.x)/2, (p.y+c.y)/2);
+      }
+      ctx.strokeStyle = STROKE_COLOR;
+      ctx.lineWidth   = 0.6;
+      ctx.stroke();
+    });
+  };
+
+  const tick = () => { update(); draw(); requestAnimationFrame(tick); };
+
+  const resize = () => {
+    if(!ctx) return;
+    buildWave();
+  };
+
+  /* track mouse relative to canvas */
+  window.addEventListener('mousemove', e => {
+    const r  = canvas.getBoundingClientRect();
+    mouse.x  = e.clientX - r.left;
+    mouse.y  = e.clientY - r.top;
+  });
+  window.addEventListener('touchmove', e => {
+    if(e.touches.length){
+      const r = canvas.getBoundingClientRect();
+      mouse.x = e.touches[0].clientX - r.left;
+      mouse.y = e.touches[0].clientY - r.top;
+    }
+  }, {passive:true});
+  window.addEventListener('resize', resize);
+
+  ctx = canvas.getContext('2d');
+  let started = false;
+
+  const start = () => {
+    if(started) return;
+    const W = wrapper.offsetWidth, H = wrapper.offsetHeight;
+    if(!W || !H) return;
+    started = true;
+    buildWave();
+    tick();
+  };
+
+  new ResizeObserver(start).observe(wrapper);
+  setTimeout(start, 80);
+})();
+</script>
+</body>
+</html>

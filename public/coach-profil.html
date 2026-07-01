@@ -1,0 +1,1067 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SKARP — Karim Mansour — Coach Rugby & Performance</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css"/>
+<style>
+/* ─── RESET ──────────────────────────────────────── */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --lime:#C6FF34;--carbon:#171717;--c2:#262626;--white:#fff;
+  --B:'Barlow Condensed',sans-serif;--S:'DM Sans',sans-serif;
+}
+html{scroll-behavior:smooth}
+body{background:var(--carbon);color:var(--white);font-family:var(--S);font-size:16px;overflow-x:hidden;cursor:none}
+body.touch{cursor:auto}
+a{color:inherit;text-decoration:none}
+img{display:block;max-width:100%}
+button{cursor:none;border:none;background:none;font-family:var(--S)}
+body.touch button{cursor:pointer}
+
+/* ─── CURSOR ─────────────────────────────────────── */
+#cd{position:fixed;width:8px;height:8px;background:var(--lime);border-radius:50%;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);transition:width .12s,height .12s}
+#cr{position:fixed;width:32px;height:32px;border:1.5px solid rgba(255,255,255,.5);border-radius:50%;pointer-events:none;z-index:9998;transform:translate(-50%,-50%);transition:border-color .2s,width .2s,height .2s}
+#cd.h{width:14px;height:14px}
+#cr.h{width:44px;height:44px;border-color:var(--lime)}
+
+/* ─── NAVBAR ─────────────────────────────────────── */
+.nav{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;align-items:center;justify-content:space-between;padding:18px 40px;transition:background .35s,border-color .35s;border-bottom:1px solid transparent}
+.nav.on{background:rgba(23,23,23,.95);backdrop-filter:blur(12px);border-color:rgba(198,255,52,.12)}
+.logo{font-family:var(--B);font-size:30px;font-weight:800;letter-spacing:.02em}
+.logo b{color:var(--lime)}
+.nav-r{display:flex;align-items:center;gap:32px}
+.nav-link{font-size:13px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;position:relative}
+.nav-link::after{content:'';position:absolute;bottom:-2px;left:0;right:0;height:1.5px;background:var(--lime);transform:scaleX(0);transform-origin:left;transition:transform .28s}
+.nav-link:hover::after,.nav-link.active::after{transform:scaleX(1)}
+.nav-cta{font-family:var(--B);font-size:16px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;background:var(--lime);color:var(--carbon);padding:10px 26px}
+.burger{display:none;flex-direction:column;gap:5px;width:26px;cursor:none}
+body.touch .burger{cursor:pointer}
+.burger span{display:block;height:2px;background:var(--white);transition:transform .3s,opacity .3s}
+.mob-nav{position:fixed;inset:0;background:var(--carbon);z-index:199;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;padding:0 40px;opacity:0;pointer-events:none;transition:opacity .35s}
+.mob-nav.open{opacity:1;pointer-events:all}
+.mob-nav a{font-family:var(--B);font-size:clamp(44px,10vw,72px);font-weight:800;text-transform:uppercase;line-height:1;border-bottom:1px solid rgba(255,255,255,.06);width:100%;padding:12px 0;display:block}
+.mob-nav a.cta{color:var(--lime)}
+
+/* ─── HERO COVER ─────────────────────────────────── */
+.hero-cover{
+  position:relative;height:420px;overflow:hidden;
+  background:#0a0a0a;
+}
+.hero-cover-img{
+  width:100%;height:100%;object-fit:cover;
+  will-change:transform;
+}
+.hero-cover-overlay{
+  position:absolute;inset:0;
+  background:linear-gradient(to bottom,rgba(23,23,23,.3) 0%,rgba(23,23,23,.85) 100%);
+}
+
+/* ─── PROFILE CARD ───────────────────────────────── */
+.profile-wrap{max-width:1200px;margin:0 auto;padding:0 40px}
+.profile-card{
+  background:var(--c2);
+  margin-top:-80px;
+  position:relative;z-index:10;
+  padding:32px 36px 36px;
+  border:1px solid rgba(255,255,255,.07);
+  opacity:0;transform:translateY(40px);
+}
+.profile-top{display:flex;align-items:flex-start;gap:28px;flex-wrap:wrap}
+.profile-avatar-wrap{position:relative;flex-shrink:0}
+.profile-avatar{
+  width:100px;height:100px;border-radius:50%;
+  border:3px solid var(--lime);object-fit:cover;
+}
+.coach-logo-badge{
+  position:absolute;bottom:0;right:-8px;
+  width:32px;height:32px;background:var(--lime);border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--B);font-size:13px;font-weight:800;color:var(--carbon);
+  border:2px solid var(--c2);
+}
+.profile-info{flex:1;min-width:0}
+.profile-name{
+  font-family:var(--B);font-size:clamp(40px,5vw,72px);font-weight:800;
+  text-transform:uppercase;line-height:.95;letter-spacing:-.01em;
+  overflow:hidden;
+}
+.profile-name span{display:inline-block}
+.profile-title{font-size:15px;color:rgba(255,255,255,.55);margin-top:6px;font-weight:500}
+.profile-badges{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-top:12px}
+.badge-verif{
+  display:inline-flex;align-items:center;gap:6px;
+  background:var(--lime);color:var(--carbon);
+  font-family:var(--B);font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;
+  padding:5px 12px;
+}
+.badge-verif svg{width:11px;height:11px;stroke:var(--carbon);stroke-width:2.5;flex-shrink:0}
+.badge-lieu{
+  display:inline-flex;align-items:center;gap:6px;
+  font-size:13px;color:rgba(255,255,255,.45);
+}
+.badge-lieu svg{width:14px;height:14px;stroke:var(--lime);flex-shrink:0}
+.profile-stats{
+  display:flex;align-items:center;gap:32px;margin-top:20px;
+  padding-top:20px;border-top:1px solid rgba(255,255,255,.07);
+  flex-wrap:wrap;
+}
+.stat-item{display:flex;flex-direction:column;gap:3px}
+.stat-val{font-family:var(--B);font-size:28px;font-weight:800;color:var(--white);line-height:1}
+.stat-val.lime{color:var(--lime)}
+.stat-lbl{font-size:12px;color:rgba(255,255,255,.35);letter-spacing:.04em;text-transform:uppercase}
+.stat-sep{width:1px;height:40px;background:rgba(255,255,255,.08)}
+.profile-ctas{
+  display:flex;gap:14px;margin-top:28px;flex-wrap:wrap;
+}
+.mz{position:relative;display:inline-block}
+.btn-lime-full{
+  font-family:var(--B);font-size:18px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;
+  background:var(--lime);color:var(--carbon);padding:14px 40px;cursor:none;border:none;display:inline-block;
+  transition:background .2s;
+}
+body.touch .btn-lime-full{cursor:pointer}
+.btn-lime-full:hover{background:#d4ff5a}
+.btn-outline-full{
+  font-family:var(--B);font-size:18px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;
+  border:2px solid rgba(255,255,255,.25);color:var(--white);padding:14px 40px;cursor:none;display:inline-block;
+  transition:border-color .2s,color .2s;background:transparent;
+}
+body.touch .btn-outline-full{cursor:pointer}
+.btn-outline-full:hover{border-color:var(--lime);color:var(--lime)}
+
+/* ─── SECTION BASE ───────────────────────────────── */
+.section{padding:80px 40px;max-width:1200px;margin:0 auto}
+.section-title{
+  font-family:var(--B);font-size:clamp(40px,5vw,72px);font-weight:800;
+  text-transform:uppercase;line-height:.95;letter-spacing:-.01em;margin-bottom:48px;
+}
+.section-title b{color:var(--lime)}
+.sec-outer{padding:80px 0}
+.sec-outer .section{padding:0 40px}
+
+/* ─── PRÉSENTATION ───────────────────────────────── */
+.pres-grid{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:start}
+.video-wrap{position:relative;aspect-ratio:16/9;background:#0d0d0d;overflow:hidden;cursor:none}
+body.touch .video-wrap{cursor:pointer}
+.video-thumb{width:100%;height:100%;object-fit:cover}
+.video-overlay{position:absolute;inset:0;background:rgba(23,23,23,.45);display:flex;align-items:center;justify-content:center;transition:background .25s}
+.video-wrap:hover .video-overlay{background:rgba(23,23,23,.2)}
+.play-btn{
+  width:72px;height:72px;background:var(--lime);border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  transition:transform .25s;position:relative;
+}
+.play-btn::before{
+  content:'';position:absolute;inset:-8px;border-radius:50%;
+  border:2px solid rgba(198,255,52,.4);
+  animation:pulse 2s infinite;
+}
+@keyframes pulse{0%{opacity:1;transform:scale(1)}70%{opacity:0;transform:scale(1.5)}100%{opacity:0}}
+.play-btn svg{width:26px;height:26px;fill:var(--carbon);margin-left:4px}
+.video-wrap:hover .play-btn{transform:scale(1.1)}
+.pres-text p{font-size:15px;line-height:1.8;color:rgba(255,255,255,.65);margin-bottom:16px}
+.pres-text p:last-of-type{margin-bottom:24px}
+.tags-group{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:24px}
+.tag-pill{
+  font-size:12px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;
+  border:1px solid rgba(198,255,52,.4);color:rgba(198,255,52,.85);padding:5px 14px;
+}
+.sports-list{display:flex;flex-direction:column;gap:10px}
+.sport-row{display:flex;align-items:center;gap:12px;font-size:14px;color:rgba(255,255,255,.55)}
+.sport-row svg{width:16px;height:16px;stroke:var(--lime);flex-shrink:0}
+.sport-row b{color:var(--white)}
+
+/* ─── VIDEO MODAL ─────────────────────────────────── */
+.modal-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:500;
+  display:flex;align-items:center;justify-content:center;
+  opacity:0;pointer-events:none;transition:opacity .3s;
+}
+.modal-overlay.open{opacity:1;pointer-events:all}
+.modal-inner{
+  position:relative;width:min(900px,94vw);aspect-ratio:16/9;
+  background:#000;
+}
+.modal-close{
+  position:absolute;top:-44px;right:0;
+  width:36px;height:36px;border:1px solid rgba(255,255,255,.2);
+  display:flex;align-items:center;justify-content:center;
+  color:rgba(255,255,255,.6);font-size:20px;cursor:none;transition:border-color .2s,color .2s;
+}
+body.touch .modal-close{cursor:pointer}
+.modal-close:hover{border-color:var(--lime);color:var(--lime)}
+.modal-inner iframe{width:100%;height:100%;border:none}
+
+/* ─── CHIFFRES CLÉS ──────────────────────────────── */
+.stats-band{
+  background:var(--lime);color:var(--carbon);
+  padding:60px 40px;text-align:center;
+}
+.stats-inner{
+  max-width:900px;margin:0 auto;
+  display:grid;grid-template-columns:repeat(3,1fr);gap:20px;
+}
+.kpi{display:flex;flex-direction:column;align-items:center;gap:6px}
+.kpi-val{
+  font-family:var(--B);font-size:clamp(52px,7vw,88px);font-weight:800;
+  line-height:1;letter-spacing:-.02em;
+}
+.kpi-lbl{font-size:13px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;opacity:.7}
+.stats-sep-v{width:1px;background:rgba(23,23,23,.15);height:80%;align-self:center}
+
+/* ─── OFFRES ─────────────────────────────────────── */
+.offres-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:start}
+.offre-card{
+  background:var(--c2);padding:36px;
+  border:1px solid rgba(255,255,255,.07);
+  transition:border-color .3s;
+  display:flex;flex-direction:column;height:100%;
+}
+.offre-card:hover{border-color:rgba(198,255,52,.5)}
+.offre-card.featured{border-color:rgba(198,255,52,.25)}
+.offre-label{
+  font-family:var(--B);font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--lime);margin-bottom:8px;
+}
+.offre-title{font-family:var(--B);font-size:32px;font-weight:800;text-transform:uppercase;line-height:1;margin-bottom:8px}
+.offre-sub{font-size:13px;color:rgba(255,255,255,.4);margin-bottom:20px}
+.offre-desc{font-size:14px;color:rgba(255,255,255,.55);line-height:1.7;margin-bottom:24px}
+.offre-features{list-style:none;display:flex;flex-direction:column;gap:10px;margin-bottom:28px}
+.offre-features li{display:flex;align-items:center;gap:10px;font-size:14px;color:rgba(255,255,255,.7)}
+.offre-features li svg{width:16px;height:16px;flex-shrink:0;stroke:var(--lime)}
+.offre-price{
+  font-family:var(--B);font-size:60px;font-weight:800;line-height:1;color:var(--white);
+  letter-spacing:-.02em;margin-bottom:4px;
+}
+.offre-price span{font-family:var(--S);font-size:16px;color:rgba(255,255,255,.3);font-weight:400}
+.offre-trial{
+  display:inline-block;background:rgba(198,255,52,.12);color:var(--lime);
+  font-size:12px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;
+  padding:6px 14px;border:1px solid rgba(198,255,52,.3);margin-bottom:24px;
+}
+.btn-lime-w{
+  font-family:var(--B);font-size:18px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;
+  background:var(--lime);color:var(--carbon);padding:16px;text-align:center;
+  cursor:none;transition:background .2s;border:none;width:100%;margin-top:auto;display:block;
+}
+body.touch .btn-lime-w{cursor:pointer}
+.btn-lime-w:hover{background:#d4ff5a}
+
+/* ─── PROGRAMMES MINI-CARDS ──────────────────────── */
+.prog-list{display:flex;flex-direction:column;gap:12px;margin-bottom:24px;flex:1}
+.prog-card{
+  background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);
+  padding:16px 18px;display:flex;align-items:center;justify-content:space-between;gap:16px;
+  transition:border-color .2s;flex-wrap:wrap;
+}
+.prog-card:hover{border-color:rgba(198,255,52,.3)}
+.prog-info{flex:1;min-width:0}
+.prog-name{font-family:var(--B);font-size:16px;font-weight:800;text-transform:uppercase;margin-bottom:6px;line-height:1.1}
+.prog-tags{display:flex;gap:6px;flex-wrap:wrap}
+.prog-tag{font-size:10px;letter-spacing:.06em;text-transform:uppercase;border:1px solid rgba(255,255,255,.12);color:rgba(255,255,255,.35);padding:2px 8px}
+.prog-right{display:flex;align-items:center;gap:14px;flex-shrink:0}
+.prog-price{font-family:var(--B);font-size:20px;font-weight:800;color:var(--lime)}
+.btn-outline-sm{
+  font-family:var(--B);font-size:13px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;
+  border:1.5px solid rgba(198,255,52,.4);color:rgba(198,255,52,.85);
+  padding:7px 16px;cursor:none;display:inline-block;white-space:nowrap;transition:border-color .2s,color .2s;background:transparent;
+}
+body.touch .btn-outline-sm{cursor:pointer}
+.btn-outline-sm:hover{border-color:var(--lime);color:var(--lime)}
+
+/* ─── PRÉSENTIEL ─────────────────────────────────── */
+.pres-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:start}
+.geo-title{font-family:var(--B);font-size:20px;font-weight:800;text-transform:uppercase;margin-bottom:16px;color:var(--lime)}
+.geo-list{list-style:none;display:flex;flex-direction:column;gap:12px;margin-bottom:28px}
+.geo-item{display:flex;align-items:flex-start;gap:12px;font-size:14px;color:rgba(255,255,255,.6);line-height:1.5}
+.geo-item svg{width:16px;height:16px;stroke:var(--lime);flex-shrink:0;margin-top:2px}
+.geo-item b{color:var(--white);display:block}
+.cal-title{font-family:var(--B);font-size:20px;font-weight:800;text-transform:uppercase;margin-bottom:16px;color:var(--lime)}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;overflow-x:auto;padding-bottom:4px}
+.cal-day{display:flex;flex-direction:column;align-items:center;gap:4px;min-width:0}
+.cal-day-name{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.3);font-weight:500;margin-bottom:4px}
+.cal-slot{
+  width:100%;padding:6px 0;text-align:center;font-size:11px;font-weight:500;
+  border-radius:2px;white-space:nowrap;
+}
+.cal-slot.ok{background:rgba(198,255,52,.15);color:var(--lime);border:1px solid rgba(198,255,52,.3)}
+.cal-slot.taken{background:rgba(255,255,255,.03);color:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.06)}
+.btn-lime-full-block{
+  font-family:var(--B);font-size:18px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;
+  background:var(--lime);color:var(--carbon);padding:16px;text-align:center;
+  cursor:none;transition:background .2s;border:none;width:100%;display:block;margin-top:20px;
+}
+body.touch .btn-lime-full-block{cursor:pointer}
+.btn-lime-full-block:hover{background:#d4ff5a}
+
+/* ─── AVIS ───────────────────────────────────────── */
+.avis-header{display:flex;align-items:center;gap:28px;margin-bottom:48px;flex-wrap:wrap}
+.avis-score{display:flex;align-items:flex-end;gap:12px}
+.avis-num{font-family:var(--B);font-size:80px;font-weight:800;line-height:1;color:var(--white)}
+.avis-meta{display:flex;flex-direction:column;gap:4px;padding-bottom:10px}
+.avis-stars{font-size:24px;color:var(--lime);letter-spacing:2px}
+.avis-count{font-size:13px;color:rgba(255,255,255,.35);letter-spacing:.04em;text-transform:uppercase}
+.swiper{width:100%;overflow:hidden}
+.swiper-slide{height:auto}
+.avis-card{
+  background:var(--c2);padding:28px;height:100%;
+  border:1px solid rgba(255,255,255,.06);display:flex;flex-direction:column;gap:16px;
+}
+.avis-top{display:flex;align-items:center;gap:14px}
+.avis-avatar{width:48px;height:48px;border-radius:50%;object-fit:cover;border:2px solid rgba(255,255,255,.08)}
+.avis-user{display:flex;flex-direction:column;gap:3px}
+.avis-name{font-weight:500;font-size:15px}
+.avis-sport{font-size:12px;color:rgba(255,255,255,.35);letter-spacing:.04em;text-transform:uppercase}
+.avis-stars-sm{font-size:14px;color:var(--lime);letter-spacing:1px;margin-left:auto;flex-shrink:0}
+.avis-text{font-size:14px;color:rgba(255,255,255,.6);line-height:1.75;flex:1}
+.avis-reply{
+  background:rgba(255,255,255,.03);border-left:2px solid var(--lime);
+  padding:12px 14px;margin-top:4px;
+}
+.avis-reply-label{font-size:11px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--lime);margin-bottom:6px}
+.avis-reply-text{font-size:13px;color:rgba(255,255,255,.45);line-height:1.7}
+.swiper-pagination-bullet{background:rgba(255,255,255,.2)!important;opacity:1!important;width:6px!important;height:6px!important}
+.swiper-pagination-bullet-active{background:var(--lime)!important;width:24px!important;border-radius:3px!important}
+.swiper-pagination{position:static!important;margin-top:28px!important}
+
+/* ─── COACHS SIMILAIRES ──────────────────────────── */
+.similar-scroll{overflow-x:auto;padding-bottom:12px;cursor:grab;user-select:none;-webkit-user-select:none}
+.similar-scroll:active{cursor:grabbing}
+.similar-scroll::-webkit-scrollbar{height:3px}
+.similar-scroll::-webkit-scrollbar-track{background:transparent}
+.similar-scroll::-webkit-scrollbar-thumb{background:rgba(198,255,52,.3);border-radius:2px}
+.similar-row{display:flex;gap:16px;width:max-content;padding:4px 2px}
+.sim-card{
+  width:240px;background:var(--c2);border:1px solid rgba(255,255,255,.06);
+  cursor:none;transition:border-color .25s,transform .25s;flex-shrink:0;
+}
+body.touch .sim-card{cursor:pointer}
+.sim-card:hover{border-color:var(--lime);transform:translateY(-4px)}
+.sim-photo{aspect-ratio:4/3;overflow:hidden;position:relative}
+.sim-photo img{width:100%;height:100%;object-fit:cover;transition:transform .4s}
+.sim-card:hover .sim-photo img{transform:scale(1.05)}
+.sim-body{padding:14px}
+.sim-name{font-family:var(--B);font-size:18px;font-weight:800;text-transform:uppercase;margin-bottom:2px}
+.sim-title{font-size:12px;color:rgba(255,255,255,.4);margin-bottom:8px}
+.sim-row{display:flex;align-items:center;justify-content:space-between}
+.sim-stars{font-size:12px;color:var(--lime)}
+.sim-price{font-family:var(--B);font-size:16px;font-weight:800;color:var(--lime)}
+
+/* ─── FOOTER ─────────────────────────────────────── */
+.footer{background:var(--carbon);padding:64px 40px 36px;border-top:2px solid var(--lime)}
+.footer-top{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:60px;margin-bottom:56px}
+.footer-logo{font-family:var(--B);font-size:36px;font-weight:800;margin-bottom:12px}
+.footer-logo b{color:var(--lime)}
+.footer-tagline{font-size:13px;color:rgba(255,255,255,.3);max-width:220px;line-height:1.8}
+.footer-socials{display:flex;gap:10px;margin-top:20px}
+.footer-soc{width:36px;height:36px;border:1px solid rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;transition:border-color .2s}
+.footer-soc:hover{border-color:var(--lime)}
+.footer-soc svg{width:14px;height:14px;stroke:rgba(255,255,255,.4);transition:stroke .2s}
+.footer-soc:hover svg{stroke:var(--lime)}
+.footer-col h4{font-family:var(--B);font-size:13px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.2);margin-bottom:16px}
+.footer-links{list-style:none;display:flex;flex-direction:column;gap:10px}
+.footer-links a{font-size:13px;color:rgba(255,255,255,.4);transition:color .2s}
+.footer-links a:hover{color:var(--lime)}
+.footer-bottom{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;padding-top:28px;border-top:1px solid rgba(255,255,255,.06)}
+.footer-bottom p,.footer-bottom a{font-size:12px;color:rgba(255,255,255,.2)}
+.footer-bottom a:hover{color:var(--lime)}
+.footer-bl{display:flex;gap:20px}
+
+/* ─── REVEAL UTILITY ─────────────────────────────── */
+.reveal{opacity:0;transform:translateY(40px)}
+
+/* ─── RESPONSIVE ─────────────────────────────────── */
+@media(max-width:900px){
+  .pres-grid,.offres-grid,.pres-grid-2{grid-template-columns:1fr}
+  .stats-inner{grid-template-columns:1fr;gap:32px}
+  .stats-sep-v{display:none}
+  .profile-wrap{padding:0 20px}
+  .profile-card{padding:22px}
+  .section{padding:60px 20px}
+  .sec-outer .section{padding:0 20px}
+  .footer{padding:48px 20px 28px}
+  .footer-top{grid-template-columns:1fr;gap:28px}
+}
+@media(max-width:600px){
+  .nav{padding:14px 20px}
+  .nav-r .nav-link,.nav-r .nav-cta{display:none}
+  .burger{display:flex}
+  .hero-cover{height:280px}
+  .profile-top{flex-direction:column}
+  .profile-ctas{flex-direction:column;width:100%}
+  .btn-lime-full,.btn-outline-full{text-align:center;width:100%}
+  .profile-stats{gap:16px}
+  .stat-sep{display:none}
+  .footer-bottom{flex-direction:column;align-items:flex-start}
+  .avis-num{font-size:60px}
+}
+</style>
+</head>
+<body>
+
+<div id="cd"></div>
+<div id="cr"></div>
+
+<!-- VIDEO MODAL -->
+<div class="modal-overlay" id="videoModal" role="dialog" aria-modal="true" aria-label="Vidéo de présentation">
+  <div class="modal-inner">
+    <button class="modal-close" id="modalClose" aria-label="Fermer">✕</button>
+    <iframe id="ytFrame" src="" title="Présentation coach" allowfullscreen></iframe>
+  </div>
+</div>
+
+<!-- MOB NAV -->
+<div class="mob-nav" id="mobNav" aria-hidden="true">
+  <a href="/landing.html">Accueil</a>
+  <a href="/recherche.html">Coachs</a>
+  <a href="skarp-landing.html#hiw">Comment ça marche</a>
+  <a href="/recherche.html" class="cta">Trouver mon coach</a>
+</div>
+
+<!-- NAVBAR -->
+<header class="nav" id="navbar">
+  <a href="/landing.html" class="logo">SKARP<b>.</b></a>
+  <div class="nav-r">
+    <a class="nav-link" href="skarp-landing.html#hiw">Comment ça marche</a>
+    <a class="nav-link active" href="/recherche.html">Coachs</a>
+    <a class="nav-link" href="skarp-landing.html#testi">Témoignages</a>
+    <div class="mz"><a href="/recherche.html" class="nav-cta mag-btn">Trouver mon coach</a></div>
+  </div>
+  <button class="burger" id="burgerBtn" aria-label="Menu" aria-expanded="false">
+    <span></span><span></span><span></span>
+  </button>
+</header>
+
+<!-- ═══ HERO COVER ═════════════════════════════════════ -->
+<div class="hero-cover" id="heroCover" aria-hidden="true">
+  <img class="hero-cover-img" id="coverImg"
+    src="https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=1800&q=80"
+    alt="Terrain de rugby">
+  <div class="hero-cover-overlay"></div>
+</div>
+
+<!-- ═══ PROFILE CARD ════════════════════════════════════ -->
+<div class="profile-wrap">
+  <div class="profile-card" id="profileCard">
+    <div class="profile-top">
+      <div class="profile-avatar-wrap">
+        <img class="profile-avatar"
+          src="https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=200&q=80"
+          alt="Karim Mansour" width="100" height="100">
+        <!-- logo badge visible si hasLogo=true -->
+        <div class="coach-logo-badge" id="logoBadge" aria-hidden="true" style="display:none">K</div>
+      </div>
+      <div class="profile-info">
+        <h1 class="profile-name" id="coachName">KARIM MANSOUR</h1>
+        <p class="profile-title">Préparateur physique · Spécialiste rugby &amp; performance athlétique</p>
+        <div class="profile-badges">
+          <span class="badge-verif">
+            <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+            Diplôme BPJEPS vérifié
+          </span>
+          <span class="badge-lieu">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
+            </svg>
+            Intervient au Stade Bordelais &amp; clubs partenaires
+          </span>
+        </div>
+        <div class="profile-stats">
+          <div class="stat-item">
+            <span class="stat-val lime">★ 4.9</span>
+            <span class="stat-lbl">47 avis</span>
+          </div>
+          <div class="stat-sep" aria-hidden="true"></div>
+          <div class="stat-item">
+            <span class="stat-val">127</span>
+            <span class="stat-lbl">Sportifs coachés</span>
+          </div>
+          <div class="stat-sep" aria-hidden="true"></div>
+          <div class="stat-item">
+            <span class="stat-val">8 ans</span>
+            <span class="stat-lbl">D'expérience</span>
+          </div>
+          <div class="stat-sep" aria-hidden="true"></div>
+          <div class="stat-item">
+            <span class="stat-val">98%</span>
+            <span class="stat-lbl">Satisfaction</span>
+          </div>
+        </div>
+        <div class="profile-ctas">
+          <div class="mz"><a href="#offres" class="btn-lime-full mag-btn">Contacter</a></div>
+          <div class="mz"><a href="#offres" class="btn-outline-full mag-btn">Voir les programmes</a></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ PRÉSENTATION ════════════════════════════════════ -->
+<div class="sec-outer">
+  <div class="section reveal" id="secPres">
+    <h2 class="section-title">QUI SUIS-<b>JE</b></h2>
+    <div class="pres-grid">
+      <div>
+        <div class="video-wrap" id="videoWrap" role="button" tabindex="0" aria-label="Lancer la vidéo de présentation">
+          <img class="video-thumb"
+            src="https://images.unsplash.com/photo-1571731956672-f2b94d7dd0cb?w=800&q=75"
+            alt="Karim en action" loading="lazy">
+          <div class="video-overlay">
+            <div class="play-btn" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><path d="M5 3l14 9-14 9V3z"/></svg>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="pres-text">
+        <p>Ancien joueur de rugby de niveau régional, j'ai raccroché les crampons pour me consacrer entièrement à la préparation physique. Aujourd'hui, j'accompagne des rugbymen et rugbywomen de tous niveaux — des clubs amateurs aux équipes de Pro D2 — pour qu'ils arrivent en pleine forme aux moments qui comptent.</p>
+        <p>Ma méthode repose sur trois piliers : la force maximale, la puissance explosive et la résistance aux duels. Je construis chaque programme sur mesure, en tenant compte du poste, du calendrier de compétition et des antécédents de blessures.</p>
+        <p>Je propose également un suivi en distanciel complet, avec bilans hebdomadaires, ajustements de charge en temps réel et messagerie directe. Plusieurs de mes athlètes sont passés pro en moins de deux saisons de travail.</p>
+        <div class="tags-group">
+          <span class="tag-pill">Prépa physique</span>
+          <span class="tag-pill">Rugby</span>
+          <span class="tag-pill">Force/puissance</span>
+          <span class="tag-pill">Récupération</span>
+          <span class="tag-pill">Nutrition sportive</span>
+          <span class="tag-pill">Prépa intersaison</span>
+        </div>
+        <div class="sports-list">
+          <div class="sport-row">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M4.93 4.93l14.14 14.14"/></svg>
+            <span><b>Rugby</b> — U14 à Élite · tous postes</span>
+          </div>
+          <div class="sport-row">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-4 0v2"/><line x1="12" y1="12" x2="12" y2="16"/></svg>
+            <span><b>Musculation</b> — Tous niveaux</span>
+          </div>
+          <div class="sport-row">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+            <span><b>Athlétisme / Sprint</b> — Intermédiaire à Avancé</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ CHIFFRES CLÉS ════════════════════════════════════ -->
+<div class="stats-band" aria-label="Chiffres clés">
+  <div class="stats-inner">
+    <div class="kpi">
+      <div class="kpi-val" data-target="127" data-suffix="">0</div>
+      <div class="kpi-lbl">Sportifs coachés</div>
+    </div>
+    <div class="stats-sep-v" aria-hidden="true"></div>
+    <div class="kpi">
+      <div class="kpi-val" data-target="8" data-suffix=" ans">0</div>
+      <div class="kpi-lbl">D'expérience</div>
+    </div>
+    <div class="stats-sep-v" aria-hidden="true"></div>
+    <div class="kpi">
+      <div class="kpi-val" data-target="98" data-suffix="%">0</div>
+      <div class="kpi-lbl">Taux de satisfaction</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ OFFRES ══════════════════════════════════════════ -->
+<div class="sec-outer" id="offres">
+  <div class="section reveal">
+    <h2 class="section-title">MES <b>OFFRES</b></h2>
+    <div class="offres-grid">
+
+      <!-- Coaching personnalisé -->
+      <div class="offre-card featured reveal">
+        <div class="offre-label">⭐ Plus populaire</div>
+        <div class="offre-title">Coaching personnalisé</div>
+        <div class="offre-sub">Suivi individuel complet, semaine par semaine</div>
+        <div class="offre-desc">Un programme unique construit autour de toi — poste, objectifs, calendrier de compétition. Je m'adapte chaque semaine en fonction de tes retours.</div>
+        <ul class="offre-features" aria-label="Fonctionnalités incluses">
+          <li><svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>Planning hebdomadaire personnalisé</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>Bilan hebdomadaire vidéo</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>Messagerie directe 7j/7</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>Alertes douleur &amp; prévention blessure</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>Ajustement de charge en temps réel</li>
+        </ul>
+        <div class="offre-price">120€ <span>/ mois</span></div>
+        <div class="offre-trial">✓ Essai gratuit 5 jours</div>
+        <div class="mz"><button class="btn-lime-w mag-btn">Démarrer l'essai gratuit</button></div>
+      </div>
+
+      <!-- Programmes universels -->
+      <div class="offre-card reveal">
+        <div class="offre-title">Programmes universels</div>
+        <div class="offre-sub">Accès direct, sans suivi personnalisé</div>
+        <div class="offre-desc">Des plans d'entraînement construits sur mesure pour les rugbymen, accessibles immédiatement après achat.</div>
+        <div class="prog-list" aria-label="Programmes disponibles">
+          <div class="prog-card reveal">
+            <div class="prog-info">
+              <div class="prog-name">Prépa intersaison rugby</div>
+              <div class="prog-tags">
+                <span class="prog-tag">8 semaines</span>
+                <span class="prog-tag">Intermédiaire</span>
+              </div>
+            </div>
+            <div class="prog-right">
+              <span class="prog-price">49€</span>
+              <div class="mz"><button class="btn-outline-sm mag-btn">Voir</button></div>
+            </div>
+          </div>
+          <div class="prog-card reveal">
+            <div class="prog-info">
+              <div class="prog-name">Force maximale prop</div>
+              <div class="prog-tags">
+                <span class="prog-tag">12 semaines</span>
+                <span class="prog-tag">Avancé</span>
+              </div>
+            </div>
+            <div class="prog-right">
+              <span class="prog-price">69€</span>
+              <div class="mz"><button class="btn-outline-sm mag-btn">Voir</button></div>
+            </div>
+          </div>
+          <div class="prog-card reveal">
+            <div class="prog-info">
+              <div class="prog-name">Vitesse &amp; explosivité ailier</div>
+              <div class="prog-tags">
+                <span class="prog-tag">6 semaines</span>
+                <span class="prog-tag">Tous niveaux</span>
+              </div>
+            </div>
+            <div class="prog-right">
+              <span class="prog-price">39€</span>
+              <div class="mz"><button class="btn-outline-sm mag-btn">Voir</button></div>
+            </div>
+          </div>
+        </div>
+        <div class="mz" style="width:100%"><button class="btn-lime-w mag-btn" style="background:transparent;border:2px solid rgba(198,255,52,.4);color:var(--lime)">Voir tous les programmes</button></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ PRÉSENTIEL ═══════════════════════════════════════ -->
+<div class="sec-outer" style="background:rgba(38,38,38,.4);border-top:1px solid rgba(255,255,255,.05);border-bottom:1px solid rgba(255,255,255,.05)">
+  <div class="section reveal">
+    <h2 class="section-title">DISPONIBLE EN <b>PRÉSENTIEL</b></h2>
+    <div class="pres-grid-2">
+      <div>
+        <div class="geo-title">Zone géographique</div>
+        <ul class="geo-list" aria-label="Zones d'intervention">
+          <li class="geo-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            <span><b>Bordeaux centre</b> — Stade Bordelais, complexe Ornano, salle Form One</span>
+          </li>
+          <li class="geo-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            <span><b>Mérignac · Pessac</b> — Salles partenaires, terrain naturel Beutre</span>
+          </li>
+          <li class="geo-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            <span><b>Déplacement possible</b> — rayon 40 km autour de Bordeaux (sur devis)</span>
+          </li>
+        </ul>
+        <div class="mz" style="display:inline-block;width:100%">
+          <button class="btn-lime-full-block mag-btn">Réserver un créneau</button>
+        </div>
+      </div>
+      <div>
+        <div class="cal-title">Disponibilités — cette semaine</div>
+        <div class="cal-grid" role="grid" aria-label="Calendrier des disponibilités">
+          <div class="cal-day" role="columnheader"><div class="cal-day-name">Lun</div>
+            <div class="cal-slot ok">9h</div>
+            <div class="cal-slot taken">11h</div>
+            <div class="cal-slot ok">14h</div>
+            <div class="cal-slot taken">17h</div>
+          </div>
+          <div class="cal-day" role="columnheader"><div class="cal-day-name">Mar</div>
+            <div class="cal-slot taken">9h</div>
+            <div class="cal-slot taken">11h</div>
+            <div class="cal-slot ok">14h</div>
+            <div class="cal-slot ok">17h</div>
+          </div>
+          <div class="cal-day" role="columnheader"><div class="cal-day-name">Mer</div>
+            <div class="cal-slot ok">9h</div>
+            <div class="cal-slot ok">11h</div>
+            <div class="cal-slot taken">14h</div>
+            <div class="cal-slot taken">17h</div>
+          </div>
+          <div class="cal-day" role="columnheader"><div class="cal-day-name">Jeu</div>
+            <div class="cal-slot ok">9h</div>
+            <div class="cal-slot taken">11h</div>
+            <div class="cal-slot taken">14h</div>
+            <div class="cal-slot ok">17h</div>
+          </div>
+          <div class="cal-day" role="columnheader"><div class="cal-day-name">Ven</div>
+            <div class="cal-slot taken">9h</div>
+            <div class="cal-slot ok">11h</div>
+            <div class="cal-slot ok">14h</div>
+            <div class="cal-slot taken">17h</div>
+          </div>
+          <div class="cal-day" role="columnheader"><div class="cal-day-name">Sam</div>
+            <div class="cal-slot ok">9h</div>
+            <div class="cal-slot ok">11h</div>
+            <div class="cal-slot taken">14h</div>
+            <div class="cal-slot taken">17h</div>
+          </div>
+          <div class="cal-day" role="columnheader"><div class="cal-day-name">Dim</div>
+            <div class="cal-slot taken">9h</div>
+            <div class="cal-slot taken">11h</div>
+            <div class="cal-slot taken">14h</div>
+            <div class="cal-slot taken">17h</div>
+          </div>
+        </div>
+        <p style="margin-top:12px;font-size:12px;color:rgba(255,255,255,.25)">
+          <span style="color:var(--lime)">■</span> Disponible &nbsp;
+          <span style="color:rgba(255,255,255,.2)">■</span> Réservé
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ AVIS ════════════════════════════════════════════ -->
+<div class="sec-outer">
+  <div class="section reveal" id="secAvis">
+    <h2 class="section-title">CE QUE DISENT LES <b>SPORTIFS</b></h2>
+    <div class="avis-header">
+      <div class="avis-score">
+        <div class="avis-num">4.9</div>
+        <div class="avis-meta">
+          <div class="avis-stars" aria-label="4.9 étoiles sur 5">★★★★★</div>
+          <div class="avis-count">47 avis vérifiés</div>
+        </div>
+      </div>
+    </div>
+    <div class="swiper" id="avisSwiper" aria-label="Carousel d'avis">
+      <div class="swiper-wrapper">
+
+        <div class="swiper-slide">
+          <div class="avis-card">
+            <div class="avis-top">
+              <img class="avis-avatar" src="https://images.unsplash.com/photo-1568602471122-7832951cc4c5?w=100&q=75" alt="Thomas R." loading="lazy">
+              <div class="avis-user"><span class="avis-name">Thomas R.</span><span class="avis-sport">Rugby · Ailier</span></div>
+              <span class="avis-stars-sm" aria-label="5 étoiles">★★★★★</span>
+            </div>
+            <div class="avis-text">Karim a complètement transformé ma prépa intersaison. En 8 semaines j'ai gagné 4% de masse musculaire et mon chronométrage au 40m a baissé de 0.3 secondes. Un coach qui comprend vraiment les exigences du rugby.</div>
+            <div class="avis-reply"><div class="avis-reply-label">Réponse de Karim</div><div class="avis-reply-text">Merci Thomas, tu t'es vraiment donné à fond sur ce cycle. La progression sur les sprints est le résultat direct du travail de force excentrique qu'on a fait — continue comme ça pour la reprise !</div></div>
+          </div>
+        </div>
+
+        <div class="swiper-slide">
+          <div class="avis-card">
+            <div class="avis-top">
+              <img class="avis-avatar" src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=100&q=75" alt="Lucas D." loading="lazy">
+              <div class="avis-user"><span class="avis-name">Lucas D.</span><span class="avis-sport">Rugby · Pilier</span></div>
+              <span class="avis-stars-sm" aria-label="5 étoiles">★★★★★</span>
+            </div>
+            <div class="avis-text">J'ai rejoint le programme "Force maximale prop" après une saison galère avec des problèmes au dos. Karim a su adapter chaque séance à mes contraintes. 3 mois après, plus de douleurs et un back squat à 180kg.</div>
+          </div>
+        </div>
+
+        <div class="swiper-slide">
+          <div class="avis-card">
+            <div class="avis-top">
+              <img class="avis-avatar" src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&q=75" alt="Marie C." loading="lazy">
+              <div class="avis-user"><span class="avis-name">Marie C.</span><span class="avis-sport">Rugby · Demi de mêlée</span></div>
+              <span class="avis-stars-sm" aria-label="5 étoiles">★★★★★</span>
+            </div>
+            <div class="avis-text">Premier coach qui prend vraiment en compte les spécificités du poste de demi de mêlée. Le programme est ultra ciblé — endurance, vivacité, solidité dans les impacts. Résultats visibles dès les premières semaines.</div>
+            <div class="avis-reply"><div class="avis-reply-label">Réponse de Karim</div><div class="avis-reply-text">Avec plaisir Marie ! Le poste de 9 est trop souvent sous-estimé en prépa physique — j'espère que la saison se passe bien !</div></div>
+          </div>
+        </div>
+
+        <div class="swiper-slide">
+          <div class="avis-card">
+            <div class="avis-top">
+              <img class="avis-avatar" src="https://images.unsplash.com/photo-1547425260-76bcadfb4f2c?w=100&q=75" alt="Antoine B." loading="lazy">
+              <div class="avis-user"><span class="avis-name">Antoine B.</span><span class="avis-sport">Rugby · Troisième ligne</span></div>
+              <span class="avis-stars-sm" aria-label="4 étoiles">★★★★☆</span>
+            </div>
+            <div class="avis-text">Très bon coaching personnalisé, Karim est réactif et disponible. Le seul bémol c'est qu'il faut être discipliné soi-même — il vous donne les outils mais c'est vous qui bossez. Ce qui est normal, en fait !</div>
+          </div>
+        </div>
+
+        <div class="swiper-slide">
+          <div class="avis-card">
+            <div class="avis-top">
+              <img class="avis-avatar" src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100&q=75" alt="Sophie M." loading="lazy">
+              <div class="avis-user"><span class="avis-name">Sophie M.</span><span class="avis-sport">Rugby à 7 · Ailière</span></div>
+              <span class="avis-stars-sm" aria-label="5 étoiles">★★★★★</span>
+            </div>
+            <div class="avis-text">En distanciel depuis Lyon, je ne pensais pas que ce serait aussi efficace. Les bilans hebdo en vidéo sont très bien construits et les ajustements de programme sont rapides. Je recommande sans hésiter.</div>
+          </div>
+        </div>
+
+        <div class="swiper-slide">
+          <div class="avis-card">
+            <div class="avis-top">
+              <img class="avis-avatar" src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&q=75" alt="Hugo F." loading="lazy">
+              <div class="avis-user"><span class="avis-name">Hugo F.</span><span class="avis-sport">Rugby · Arrière</span></div>
+              <span class="avis-stars-sm" aria-label="5 étoiles">★★★★★</span>
+            </div>
+            <div class="avis-text">Karim m'a suivi pendant toute ma prépa pour passer professionnel. Il a eu la bonne approche à chaque phase — construction physique, affûtage, pic de forme. Signé en Nationale le mois dernier, merci Karim !</div>
+            <div class="avis-reply"><div class="avis-reply-label">Réponse de Karim</div><div class="avis-reply-text">Énorme nouvelle Hugo ! C'est toi qui as tout bossé, je t'ai juste tracé le chemin. Hâte de voir la suite de ta carrière 💪</div></div>
+          </div>
+        </div>
+
+      </div>
+      <div class="swiper-pagination" aria-label="Navigation des avis"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ COACHS SIMILAIRES ════════════════════════════════ -->
+<div class="sec-outer" style="border-top:1px solid rgba(255,255,255,.05)">
+  <div class="section reveal">
+    <h2 class="section-title">D'AUTRES COACHS QUI POURRAIENT TE <b>CORRESPONDRE</b></h2>
+    <div class="similar-scroll" id="similarScroll" role="list">
+      <div class="similar-row">
+
+        <a href="/coach-profil.html" class="sim-card" role="listitem" aria-label="Coach Hugo Mercier">
+          <div class="sim-photo"><img src="https://images.unsplash.com/photo-1612872087720-bb876e2e67d3?w=480&q=75" alt="Hugo Mercier" loading="lazy"></div>
+          <div class="sim-body">
+            <div class="sim-name">Hugo M.</div>
+            <div class="sim-title">Rugby · Prépa physique</div>
+            <div class="sim-row">
+              <span class="sim-stars">★★★★★ 4.7</span>
+              <span class="sim-price">75–115€</span>
+            </div>
+          </div>
+        </a>
+
+        <a href="/coach-profil.html" class="sim-card" role="listitem" aria-label="Coach Marc Théron">
+          <div class="sim-photo"><img src="https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?w=480&q=75" alt="Marc Théron" loading="lazy"></div>
+          <div class="sim-body">
+            <div class="sim-name">Marc T.</div>
+            <div class="sim-title">Musculation · Force</div>
+            <div class="sim-row">
+              <span class="sim-stars">★★★★★ 4.7</span>
+              <span class="sim-price">60–100€</span>
+            </div>
+          </div>
+        </a>
+
+        <a href="/coach-profil.html" class="sim-card" role="listitem" aria-label="Coach Thomas Blanc">
+          <div class="sim-photo"><img src="https://images.unsplash.com/photo-1549476464-37392f717d6a?w=480&q=75" alt="Thomas Blanc" loading="lazy"></div>
+          <div class="sim-body">
+            <div class="sim-name">Thomas B.</div>
+            <div class="sim-title">Boxe · Condition physique</div>
+            <div class="sim-row">
+              <span class="sim-stars">★★★★½ 4.5</span>
+              <span class="sim-price">65–95€</span>
+            </div>
+          </div>
+        </a>
+
+        <a href="/coach-profil.html" class="sim-card" role="listitem" aria-label="Coach Lucas Petit">
+          <div class="sim-photo"><img src="https://images.unsplash.com/photo-1517838277966-e4e5c3d8c0bd?w=480&q=75" alt="Lucas Petit" loading="lazy"></div>
+          <div class="sim-body">
+            <div class="sim-name">Lucas P.</div>
+            <div class="sim-title">CrossFit · Fonctionnel</div>
+            <div class="sim-row">
+              <span class="sim-stars">★★★★½ 4.7</span>
+              <span class="sim-price">70–120€</span>
+            </div>
+          </div>
+        </a>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ FOOTER ═══════════════════════════════════════════ -->
+<footer class="footer">
+  <div class="footer-top">
+    <div>
+      <div class="footer-logo">SKARP<b>.</b></div>
+      <p class="footer-tagline">La marketplace française qui connecte les sportifs aux meilleurs coachs certifiés.</p>
+      <div class="footer-socials">
+        <a class="footer-soc" href="#" aria-label="Instagram"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" aria-hidden="true"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r=".5" fill="currentColor" stroke="none"/></svg></a>
+        <a class="footer-soc" href="#" aria-label="TikTok"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" aria-hidden="true"><path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5"/></svg></a>
+        <a class="footer-soc" href="#" aria-label="LinkedIn"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" aria-hidden="true"><rect x="2" y="2" width="20" height="20" rx="2"/><path d="M7 10v8M7 7v.01M12 10v8M12 14a4 4 0 0 1 8 0v4"/></svg></a>
+      </div>
+    </div>
+    <div class="footer-col"><h4>Sportifs</h4><ul class="footer-links"><li><a href="/recherche.html">Trouver un coach</a></li><li><a href="skarp-landing.html#hiw">Comment ça marche</a></li><li><a href="skarp-landing.html#testi">Témoignages</a></li><li><a href="#">FAQ</a></li></ul></div>
+    <div class="footer-col"><h4>Coachs</h4><ul class="footer-links"><li><a href="#">Devenir coach</a></li><li><a href="#">Conditions</a></li><li><a href="#">Certification</a></li><li><a href="#">Blog</a></li></ul></div>
+    <div class="footer-col"><h4>SKARP</h4><ul class="footer-links"><li><a href="#">À propos</a></li><li><a href="#">Presse</a></li><li><a href="#">Careers</a></li><li><a href="#">Contact</a></li></ul></div>
+  </div>
+  <div class="footer-bottom">
+    <p>© 2025 SKARP SAS. Tous droits réservés.</p>
+    <div class="footer-bl"><a href="#">Mentions légales</a><a href="#">Confidentialité</a><a href="#">CGU</a></div>
+  </div>
+</footer>
+
+<!-- ═══ SCRIPTS ══════════════════════════════════════════ -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+<script>
+/* ─── CONFIG ─────────────────────────────────────── */
+const COACH = { hasLogo: false };
+if(COACH.hasLogo) document.getElementById('logoBadge').style.display='flex';
+
+/* ─── TOUCH ──────────────────────────────────────── */
+const isTouch = ('ontouchstart' in window)||navigator.maxTouchPoints>0;
+if(isTouch) document.body.classList.add('touch');
+
+/* ─── CURSOR ─────────────────────────────────────── */
+const cd=document.getElementById('cd'), cr=document.getElementById('cr');
+if(!isTouch){
+  const qx=gsap.quickTo(cr,'x',{duration:.14,ease:'none'});
+  const qy=gsap.quickTo(cr,'y',{duration:.14,ease:'none'});
+  document.addEventListener('mousemove',e=>{
+    gsap.set(cd,{x:e.clientX,y:e.clientY});
+    qx(e.clientX); qy(e.clientY);
+  });
+  function bindHover(){
+    document.querySelectorAll('a,button,.video-wrap,.sim-card,select,input[type=range]').forEach(el=>{
+      el.addEventListener('mouseenter',()=>{cd.classList.add('h');cr.classList.add('h')});
+      el.addEventListener('mouseleave',()=>{cd.classList.remove('h');cr.classList.remove('h')});
+    });
+  }
+  bindHover();
+}
+
+/* ─── GSAP INIT ──────────────────────────────────── */
+gsap.registerPlugin(ScrollTrigger);
+
+/* ─── NAVBAR ─────────────────────────────────────── */
+const navbar=document.getElementById('navbar');
+ScrollTrigger.create({start:'top -60px',onUpdate:s=>navbar.classList.toggle('on',s.progress>0)});
+
+/* ─── BURGER ─────────────────────────────────────── */
+const burgerBtn=document.getElementById('burgerBtn');
+const mobNav=document.getElementById('mobNav');
+let navOpen=false;
+burgerBtn.addEventListener('click',()=>{
+  navOpen=!navOpen;
+  mobNav.classList.toggle('open',navOpen);
+  mobNav.setAttribute('aria-hidden',String(!navOpen));
+  burgerBtn.setAttribute('aria-expanded',String(navOpen));
+  const sp=burgerBtn.querySelectorAll('span');
+  if(navOpen){gsap.to(sp[0],{rotate:45,y:7,duration:.28});gsap.to(sp[1],{opacity:0,duration:.2});gsap.to(sp[2],{rotate:-45,y:-7,duration:.28});}
+  else{gsap.to(sp,{rotate:0,y:0,opacity:1,duration:.28});}
+});
+
+/* ─── COVER PARALLAX ─────────────────────────────── */
+gsap.to('#coverImg',{
+  yPercent:25,ease:'none',
+  scrollTrigger:{trigger:'#heroCover',start:'top top',end:'bottom top',scrub:true}
+});
+
+/* ─── PROFILE CARD ENTRANCE ──────────────────────── */
+gsap.to('#profileCard',{
+  opacity:1,y:0,duration:.9,ease:'power3.out',delay:.15
+});
+
+/* ─── NAME SPLIT ANIMATION ───────────────────────── */
+(function(){
+  const el=document.getElementById('coachName');
+  const text=el.textContent;
+  el.textContent='';
+  text.split('').forEach(ch=>{
+    const s=document.createElement('span');
+    s.textContent=ch===' '?' ':ch;
+    s.style.display='inline-block';
+    s.style.overflow='hidden';
+    el.appendChild(s);
+  });
+  gsap.from(el.querySelectorAll('span'),{
+    y:'100%',opacity:0,duration:.7,ease:'power4.out',
+    stagger:.025,delay:.3,
+    clipPath:'inset(0 0 100% 0)'
+  });
+})();
+
+/* ─── SCROLL REVEALS ─────────────────────────────── */
+document.querySelectorAll('.reveal').forEach(el=>{
+  gsap.to(el,{
+    opacity:1,y:0,duration:.75,ease:'power3.out',
+    scrollTrigger:{trigger:el,start:'top 85%',once:true}
+  });
+});
+
+/* ─── KPI COUNTERS ───────────────────────────────── */
+document.querySelectorAll('.kpi-val[data-target]').forEach(el=>{
+  const target=parseInt(el.dataset.target);
+  const suffix=el.dataset.suffix||'';
+  const obj={n:0};
+  ScrollTrigger.create({
+    trigger:el,start:'top 80%',once:true,
+    onEnter(){
+      gsap.to(obj,{n:target,duration:1.6,ease:'power2.out',
+        onUpdate(){ el.textContent=Math.round(obj.n)+suffix; }
+      });
+    }
+  });
+});
+
+/* ─── VIDEO MODAL ─────────────────────────────────── */
+const modal=document.getElementById('videoModal');
+const ytFrame=document.getElementById('ytFrame');
+const VIDEO_URL='https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1';
+
+function openModal(){
+  ytFrame.src=VIDEO_URL;
+  modal.classList.add('open');
+  document.body.style.overflow='hidden';
+}
+function closeModal(){
+  ytFrame.src='';
+  modal.classList.remove('open');
+  document.body.style.overflow='';
+}
+document.getElementById('videoWrap').addEventListener('click',openModal);
+document.getElementById('videoWrap').addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' ')openModal();});
+document.getElementById('modalClose').addEventListener('click',closeModal);
+modal.addEventListener('click',e=>{if(e.target===modal)closeModal();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
+
+/* ─── SWIPER AVIS ─────────────────────────────────── */
+new Swiper('#avisSwiper',{
+  slidesPerView:1,spaceBetween:20,
+  breakpoints:{640:{slidesPerView:1.5},900:{slidesPerView:2.2},1100:{slidesPerView:3}},
+  pagination:{el:'.swiper-pagination',clickable:true},
+  autoplay:{delay:5000,pauseOnMouseEnter:true,disableOnInteraction:false},
+  grabCursor:true,
+});
+
+/* ─── HORIZONTAL DRAG SCROLL ─────────────────────── */
+(function(){
+  const el=document.getElementById('similarScroll');
+  let isDown=false,startX,scrollLeft;
+  el.addEventListener('mousedown',e=>{isDown=true;el.classList.add('active');startX=e.pageX-el.offsetLeft;scrollLeft=el.scrollLeft;});
+  el.addEventListener('mouseleave',()=>{isDown=false;el.classList.remove('active')});
+  el.addEventListener('mouseup',()=>{isDown=false;el.classList.remove('active')});
+  el.addEventListener('mousemove',e=>{
+    if(!isDown) return;
+    e.preventDefault();
+    const x=e.pageX-el.offsetLeft;
+    el.scrollLeft=scrollLeft-(x-startX)*1.4;
+  });
+})();
+
+/* ─── MAGNETIC BUTTONS ───────────────────────────── */
+if(!isTouch){
+  document.querySelectorAll('.mz').forEach(zone=>{
+    const btn=zone.querySelector('.mag-btn,.nav-cta,.btn-lime-full,.btn-outline-full,.btn-lime-w,.btn-lime-full-block,.btn-outline-sm');
+    if(!btn) return;
+    zone.addEventListener('mousemove',e=>{
+      const r=zone.getBoundingClientRect();
+      const x=gsap.utils.mapRange(r.left,r.right,-r.width/2,r.width/2,e.clientX);
+      const y=gsap.utils.mapRange(r.top,r.bottom,-r.height/2,r.height/2,e.clientY);
+      gsap.to(btn,{x:x*.3,y:y*.3,duration:.4,ease:'power2.out',overwrite:true});
+    });
+    zone.addEventListener('mouseleave',()=>{
+      gsap.to(btn,{x:0,y:0,duration:.7,ease:'elastic.out(1,.4)',overwrite:true});
+    });
+  });
+}
+</script>
+</body>
+</html>

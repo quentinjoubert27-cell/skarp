@@ -1,0 +1,44 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --lime: #C6FF34;
+  --carbon: #171717;
+  --c2: #262626;
+  --c3: #303030;
+  --red: #FF4D4D;
+  --orange: #FF8C42;
+}
+
+* { box-sizing: border-box; }
+
+html, body { scroll-behavior: smooth; }
+body:has(.landing-root) { cursor: none; overflow-x: hidden; }
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,.1); border-radius: 2px; }
+
+/* Custom cursor */
+#cursor-dot {
+  position: fixed; width: 8px; height: 8px;
+  background: var(--lime); border-radius: 50%;
+  pointer-events: none; z-index: 9999;
+  transform: translate(-50%,-50%);
+  transition: width .12s, height .12s;
+}
+#cursor-ring {
+  position: fixed; width: 32px; height: 32px;
+  border: 1.5px solid rgba(255,255,255,.4); border-radius: 50%;
+  pointer-events: none; z-index: 9998;
+  transform: translate(-50%,-50%);
+  transition: border-color .2s, width .2s, height .2s;
+}
+#cursor-dot.hover { width: 12px; height: 12px; }
+#cursor-ring.hover { width: 42px; height: 42px; border-color: var(--lime); }
+
+@layer utilities {
+  .font-barlow { font-family: var(--font-barlow), sans-serif; }
+}
