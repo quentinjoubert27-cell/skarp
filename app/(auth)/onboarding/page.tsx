@@ -7,7 +7,7 @@ import Button from '@/components/ui/Button'
 import Input from '@/components/ui/Input'
 
 const SPORTS = ['Rugby', 'Running', 'Natation', 'Cyclisme', 'Musculation', 'Football', 'Basketball', 'Tennis', 'Triathlon', 'Boxe', 'CrossFit', 'Yoga', 'Autre']
-const OBJECTIFS = ['Perdre du poids', 'Prendre de la masse', 'Améliorer mes performances', 'Reprendre une activité sportive', 'Préparer une compétition', 'Me remettre d'une blessure', 'Rester en forme']
+const OBJECTIFS = ['Perdre du poids', 'Prendre de la masse', 'Améliorer mes performances', 'Reprendre une activité sportive', 'Préparer une compétition', "Me remettre d'une blessure", 'Rester en forme']
 const NIVEAUX = ['Débutant', 'Intermédiaire', 'Avancé', 'Expert']
 const MODES = ['Distanciel', 'Présentiel', 'Les deux']
 
