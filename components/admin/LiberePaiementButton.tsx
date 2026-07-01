@@ -19,10 +19,10 @@ export default function LiberePaiementButton({ paymentId, paymentIntentId }: { p
     })
     const data = await res.json()
     if (data.ok) {
-      toast({ title: 'Paiement libéré', variant: 'success' })
+      toast({ title: 'Paiement libéré', type: 'success' })
       router.refresh()
     } else {
-      toast({ title: 'Erreur', description: data.error, variant: 'error' })
+      toast({ title: 'Erreur', message: data.error, type: 'error' })
     }
     setLoading(false)
   }

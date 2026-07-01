@@ -5,7 +5,7 @@ import VerifyCoachButton from '@/components/admin/VerifyCoachButton'
 interface SearchParams { filter?: string }
 
 export default async function AdminCoachsPage({ searchParams }: { searchParams: SearchParams }) {
-  const supabase = createAdminClient()
+  const supabase = await createAdminClient()
 
   let query = supabase
     .from('users_profiles')

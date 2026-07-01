@@ -5,7 +5,7 @@ import LiberePaiementButton from '@/components/admin/LiberePaiementButton'
 interface SearchParams { filter?: string }
 
 export default async function AdminPaiementsPage({ searchParams }: { searchParams: SearchParams }) {
-  const supabase = createAdminClient()
+  const supabase = await createAdminClient()
 
   let query = supabase
     .from('paiements')

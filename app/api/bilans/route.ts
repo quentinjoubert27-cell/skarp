@@ -31,8 +31,14 @@ export async function POST(req: NextRequest) {
     .eq('id', body.sportif_id)
     .single()
 
+  const { data: coach } = await supabase
+    .from('users_profiles')
+    .select('full_name')
+    .eq('id', user.id)
+    .single()
+
   if (sportif) {
-    await sendBilanReminder(sportif.email, sportif.full_name).catch(() => {})
+    await sendBilanReminder(sportif.email, sportif.full_name, coach?.full_name || 'Votre coach').catch(() => {})
   }
 
   return NextResponse.json({ ok: true, data })

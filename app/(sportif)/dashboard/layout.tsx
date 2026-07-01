@@ -27,7 +27,7 @@ export default async function SportifLayout({ children }: { children: React.Reac
 
   return (
     <div className="flex min-h-screen bg-carbon text-white">
-      <Sidebar nav={NAV} user={profile} role="sportif" />
+      <Sidebar items={NAV} activePath="" userName={profile?.full_name || ''} userRole="sportif" avatarUrl={profile?.avatar_url} />
       <main className="flex-1 ml-64 p-8">{children}</main>
     </div>
   )

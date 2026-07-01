@@ -62,9 +62,9 @@ export default function PlanningPage() {
       statut: 'planifie',
     })
     if (error) {
-      toast({ title: 'Erreur', description: error.message, variant: 'error' })
+      toast({ title: 'Erreur', message: error.message, type: 'error' })
     } else {
-      toast({ title: 'Séance ajoutée', variant: 'success' })
+      toast({ title: 'Séance ajoutée', type: 'success' })
       setShowForm(false)
       setForm({ titre: '', date_heure: '', duree_minutes: '', sportif_id: '' })
       const { data } = await supabase.from('seances').select('*').eq('coach_id', userId).order('date_heure')

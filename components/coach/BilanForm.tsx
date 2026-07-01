@@ -48,9 +48,9 @@ export default function BilanForm({ relationshipId, sportifId, coachId }: Props)
     })
 
     if (error) {
-      toast({ title: 'Erreur', description: error.message, variant: 'error' })
+      toast({ title: 'Erreur', message: error.message, type: 'error' })
     } else {
-      toast({ title: 'Bilan enregistré', variant: 'success' })
+      toast({ title: 'Bilan enregistré', type: 'success' })
       setForm({ semaine_debut: '', seances_prevues: '', seances_realisees: '', objectif_atteint: false, poids_kg: '', niveau_fatigue: '', commentaire_coach: '' })
     }
     setLoading(false)

@@ -5,7 +5,7 @@ import SuspendButton from '@/components/admin/SuspendButton'
 interface SearchParams { role?: string; q?: string }
 
 export default async function AdminUsersPage({ searchParams }: { searchParams: SearchParams }) {
-  const supabase = createAdminClient()
+  const supabase = await createAdminClient()
 
   let query = supabase
     .from('users_profiles')

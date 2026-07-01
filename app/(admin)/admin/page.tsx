@@ -2,7 +2,7 @@ import { createAdminClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 
 export default async function AdminOverviewPage() {
-  const supabase = createAdminClient()
+  const supabase = await createAdminClient()
 
   const [
     { count: totalUsers },

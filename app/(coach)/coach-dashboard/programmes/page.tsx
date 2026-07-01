@@ -8,7 +8,7 @@ import Badge from '@/components/ui/Badge'
 import { useToast } from '@/components/ui/Toast'
 
 interface Programme {
-  id: string; titre: string; description: string | null; prix: number
+  id: string; titre: string; message: string | null; prix: number
   duree_semaines: number; nb_seances_semaine: number; actif: boolean
 }
 
@@ -16,7 +16,7 @@ export default function ProgrammesCoachPage() {
   const [programmes, setProgrammes] = useState<Programme[]>([])
   const [showForm, setShowForm] = useState(false)
   const [userId, setUserId] = useState('')
-  const [form, setForm] = useState({ titre: '', description: '', prix: '', duree_semaines: '', nb_seances_semaine: '' })
+  const [form, setForm] = useState({ titre: '', message: '', prix: '', duree_semaines: '', nb_seances_semaine: '' })
   const [loading, setLoading] = useState(false)
   const { toast } = useToast()
   const supabase = createClient()
@@ -40,18 +40,18 @@ export default function ProgrammesCoachPage() {
     const { error } = await supabase.from('programmes_universels').insert({
       coach_id: userId,
       titre: form.titre,
-      description: form.description || null,
+      message: form.message || null,
       prix: parseFloat(form.prix),
       duree_semaines: parseInt(form.duree_semaines),
       nb_seances_semaine: parseInt(form.nb_seances_semaine),
       actif: true,
     })
     if (error) {
-      toast({ title: 'Erreur', description: error.message, variant: 'error' })
+      toast({ title: 'Erreur', message: error.message, type: 'error' })
     } else {
-      toast({ title: 'Programme créé', variant: 'success' })
+      toast({ title: 'Programme créé', type: 'success' })
       setShowForm(false)
-      setForm({ titre: '', description: '', prix: '', duree_semaines: '', nb_seances_semaine: '' })
+      setForm({ titre: '', message: '', prix: '', duree_semaines: '', nb_seances_semaine: '' })
       load(userId)
     }
     setLoading(false)
@@ -75,7 +75,7 @@ export default function ProgrammesCoachPage() {
           <Input label="Titre" value={form.titre} onChange={e => setForm(f => ({ ...f, titre: e.target.value }))} required />
           <div>
             <label className="text-xs text-white/35 uppercase tracking-widest block mb-2">Description</label>
-            <textarea value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
+            <textarea value={form.message} onChange={e => setForm(f => ({ ...f, message: e.target.value }))}
               rows={3} className="w-full bg-c3 border border-white/8 text-white text-sm px-3 py-2 outline-none focus:border-lime/30 resize-none" />
           </div>
           <div className="grid grid-cols-3 gap-3">
@@ -104,7 +104,7 @@ export default function ProgrammesCoachPage() {
               <h3 className="font-medium">{p.titre}</h3>
               <Badge variant={p.actif ? 'lime' : 'gray'}>{p.actif ? 'Actif' : 'Inactif'}</Badge>
             </div>
-            {p.description && <p className="text-xs text-white/40 mb-3 leading-relaxed">{p.description}</p>}
+            {p.message && <p className="text-xs text-white/40 mb-3 leading-relaxed">{p.message}</p>}
             <div className="flex items-center justify-between">
               <div className="flex gap-4 text-xs text-white/35">
                 <span>{p.duree_semaines} sem.</span>
