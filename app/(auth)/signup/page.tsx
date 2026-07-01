@@ -1,15 +1,14 @@
 'use client'
 
-import { useState } from 'react'
+import { Suspense, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
-import { sendWelcomeEmail } from '@/lib/resend'
 import Button from '@/components/ui/Button'
 import Input from '@/components/ui/Input'
 import { cn } from '@/lib/utils'
 
-export default function SignupPage() {
+function SignupForm() {
   const params = useSearchParams()
   const [role, setRole] = useState<'sportif' | 'coach'>(
     (params.get('role') as 'sportif' | 'coach') || 'sportif'
@@ -27,7 +26,7 @@ export default function SignupPage() {
     setLoading(true)
     setError('')
 
-    const { data, error } = await supabase.auth.signUp({
+    const { error } = await supabase.auth.signUp({
       email,
       password,
       options: { data: { full_name: fullName, role } },
@@ -35,7 +34,6 @@ export default function SignupPage() {
 
     if (error) { setError(error.message); setLoading(false); return }
 
-    // Email de bienvenue (via API route pour éviter d'exposer la clé Resend côté client)
     await fetch('/api/auth/welcome', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -55,7 +53,6 @@ export default function SignupPage() {
         <h1 className="font-barlow text-4xl font-black uppercase mb-1">CRÉER UN COMPTE</h1>
         <p className="text-sm text-white/35 mb-8">Déjà un compte ? <Link href="/login" className="text-lime hover:underline">Se connecter</Link></p>
 
-        {/* Choix du rôle */}
         <div className="flex gap-3 mb-6">
           {(['sportif', 'coach'] as const).map(r => (
             <button
@@ -82,5 +79,13 @@ export default function SignupPage() {
         </form>
       </div>
     </main>
+  )
+}
+
+export default function SignupPage() {
+  return (
+    <Suspense>
+      <SignupForm />
+    </Suspense>
   )
 }
