@@ -1,12 +1,14 @@
 import { Resend } from 'resend'
 
-export const resend = new Resend(process.env.RESEND_API_KEY)
+function getResend() {
+  return new Resend(process.env.RESEND_API_KEY || 'placeholder')
+}
 
 const FROM = process.env.RESEND_FROM_EMAIL || 'noreply@skarp.fr'
 const APP = process.env.NEXT_PUBLIC_APP_URL || 'https://skarp.fr'
 
 export async function sendWelcomeEmail(to: string, name: string, role: 'sportif' | 'coach') {
-  return resend.emails.send({
+  return getResend().emails.send({
     from: FROM,
     to,
     subject: 'Bienvenue sur SKARP.',
@@ -30,7 +32,7 @@ export async function sendWelcomeEmail(to: string, name: string, role: 'sportif'
 }
 
 export async function sendPaymentConfirmation(to: string, name: string, amount: number, description: string) {
-  return resend.emails.send({
+  return getResend().emails.send({
     from: FROM,
     to,
     subject: `Paiement confirmé — ${amount}€`,
@@ -52,7 +54,7 @@ export async function sendPaymentConfirmation(to: string, name: string, amount: 
 }
 
 export async function sendDouleurAlertToCoach(coachEmail: string, coachName: string, sportifName: string, description: string) {
-  return resend.emails.send({
+  return getResend().emails.send({
     from: FROM,
     to: coachEmail,
     subject: `⚠️ Alerte douleur — ${sportifName}`,
@@ -77,7 +79,7 @@ export async function sendDouleurAlertToCoach(coachEmail: string, coachName: str
 }
 
 export async function sendNewMessageNotif(to: string, name: string, senderName: string) {
-  return resend.emails.send({
+  return getResend().emails.send({
     from: FROM,
     to,
     subject: `Nouveau message de ${senderName}`,
@@ -96,7 +98,7 @@ export async function sendNewMessageNotif(to: string, name: string, senderName: 
 }
 
 export async function sendBilanReminder(to: string, name: string, coachName: string) {
-  return resend.emails.send({
+  return getResend().emails.send({
     from: FROM,
     to,
     subject: 'Rappel — bilan hebdomadaire à remplir',
@@ -117,7 +119,7 @@ export async function sendBilanReminder(to: string, name: string, coachName: str
 export async function sendReservationConfirmation(
   to: string, name: string, coachName: string, dateHeure: string
 ) {
-  return resend.emails.send({
+  return getResend().emails.send({
     from: FROM,
     to,
     subject: `Réservation confirmée — ${coachName}`,
